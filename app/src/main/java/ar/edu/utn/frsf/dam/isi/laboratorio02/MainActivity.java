@@ -12,16 +12,16 @@ public class MainActivity extends AppCompatActivity {
     private Button btnHistorial;
     private Button btnListaProductos;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        final Intent intentListaProductos = new Intent(this, ListaProductosActivity.class);
         btnNuevoPedido = (Button) findViewById(R.id.btnMainNuevoPedido);
         btnNuevoPedido.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent();
-                startActivity(i);
             }
         });
 
@@ -29,8 +29,6 @@ public class MainActivity extends AppCompatActivity {
         btnHistorial.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent();
-                startActivity(i);
             }
         });
 
@@ -38,8 +36,7 @@ public class MainActivity extends AppCompatActivity {
         btnListaProductos.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent();
-                startActivity(i);
+                startActivity(intentListaProductos);
             }
         });
     }
