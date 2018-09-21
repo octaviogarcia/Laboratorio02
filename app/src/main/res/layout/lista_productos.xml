@@ -46,24 +46,23 @@
         </ScrollView>
 
         <TextView
-            android:id="@+id/textView3"
+            android:id="@+id/tvCantidad"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="TextView" />
+            android:text="Cantidad a Pedir" />
 
         <EditText
-            android:id="@+id/editText"
+            android:id="@+id/etCantidad"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:inputType="textPersonName"
-            android:text="Name" />
+            android:inputType="number" />
 
         <Button
-            android:id="@+id/button"
+            android:id="@+id/btnAgregar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Button" />
+            android:text="Agregar" />
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

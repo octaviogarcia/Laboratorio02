@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
         btnListaProductos.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                intentListaProductos.putExtra("VentanaPrincipal",true);
                 startActivity(intentListaProductos);
             }
         });
