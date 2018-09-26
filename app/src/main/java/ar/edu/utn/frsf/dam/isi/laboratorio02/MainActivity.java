@@ -1,5 +1,6 @@
 package ar.edu.utn.frsf.dam.isi.laboratorio02;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -39,8 +40,21 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 intentListaProductos.putExtra("VentanaPrincipal",true);
-                startActivity(intentListaProductos);
+                startActivityForResult(intentListaProductos,CodigosLlamadas.MAIN_A_LISTARPRODUCTOS.ordinal());
             }
         });
+    }
+    @Override
+    protected void onActivityResult(int request,int result, Intent data)
+    {//Dejo el esqueleto para acordarme nomas
+        if(result == Activity.RESULT_OK)
+        {
+            if(request == CodigosLlamadas.MAIN_A_LISTARPRODUCTOS.ordinal()) return;//Nunca deberia entrar aca, unreachable
+            else{}
+        }
+        else {
+            //Deberia siempre fallar pq no hay forma q retorne con un finish()
+        }
+
     }
 }
