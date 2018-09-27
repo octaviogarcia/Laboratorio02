@@ -1,5 +1,6 @@
 package ar.edu.utn.frsf.dam.isi.laboratorio02;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -64,17 +65,28 @@ public class ListaProductosActivity extends AppCompatActivity {
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {}
         });
-        Boolean ventanaPrincipal = intent.getBooleanExtra("VentanaPrincipal",true);
+        Boolean ventanaPrincipal = intent.getBooleanExtra("VentanaPrincipal",false);
         btnAgregar.setEnabled(!ventanaPrincipal);
         etCantidad.setEnabled(!ventanaPrincipal);
         btnAgregar.setOnClickListener( new Button.OnClickListener(){
             @Override
             public void onClick(View view) {
                 RadioButton rb = findViewById(radioGroup.getCheckedRadioButtonId());
+                if (rb == null)
+                {
+                    //Nada seleccionado, ignoro
+                    return;
+                }
                 Integer idProducto = rb.getId();
                 String cantidad = etCantidad.getText().toString();
-                System.out.println("ID producto "+idProducto.toString());
-                System.out.println("Cantidad "+cantidad);
+                Intent intentResultado = new Intent();
+                //si no puse cantidad, tomo como 1
+                //Quality of life!
+                if(cantidad.isEmpty()) intentResultado.putExtra("cantidad",1);
+                else intentResultado.putExtra("cantidad",Integer.valueOf(cantidad));
+                intentResultado.putExtra("producto",idProducto);
+                setResult(Activity.RESULT_OK,intentResultado);
+                finish();
             }
         });
 
