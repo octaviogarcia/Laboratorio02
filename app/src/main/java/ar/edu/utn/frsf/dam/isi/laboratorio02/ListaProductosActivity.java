@@ -43,13 +43,13 @@ public class ListaProductosActivity extends AppCompatActivity {
 
         final List<Categoria> listaCat = productoRepository.getCategorias();
 
-        List<String> listaCatString = new ArrayList<String>();
+        List<String> listaCatString = new ArrayList<>();
         for (Categoria c: listaCat) {
             listaCatString.add(c.getNombre());
         }
 
         //Creating the ArrayAdapter instance having the country list
-        ArrayAdapter aa = new ArrayAdapter(this,android.R.layout.simple_spinner_item,listaCatString);
+        ArrayAdapter<String> aa = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item,listaCatString);
         aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         //Setting the ArrayAdapter data on the Spinner
         spinnerCatProd.setAdapter(aa);
@@ -72,19 +72,18 @@ public class ListaProductosActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 RadioButton rb = findViewById(radioGroup.getCheckedRadioButtonId());
-                if (rb == null)
+                String cantidad = etCantidad.getText().toString();
+                if (rb == null || cantidad.isEmpty())
                 {
                     //Nada seleccionado, ignoro
                     return;
                 }
                 Integer idProducto = rb.getId();
-                String cantidad = etCantidad.getText().toString();
                 Intent intentResultado = new Intent();
-                //si no puse cantidad, tomo como 1
-                //Quality of life!
-                if(cantidad.isEmpty()) intentResultado.putExtra("cantidad",1);
-                else intentResultado.putExtra("cantidad",Integer.valueOf(cantidad));
+
+                intentResultado.putExtra("cantidad",Integer.valueOf(cantidad));
                 intentResultado.putExtra("producto",idProducto);
+
                 setResult(Activity.RESULT_OK,intentResultado);
                 finish();
             }

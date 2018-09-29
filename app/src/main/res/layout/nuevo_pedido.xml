@@ -84,24 +84,10 @@
             android:ems="10"
             android:inputType="time" />
 
-        <ScrollView
+        <ListView
+            android:id="@+id/lvPedido"
             android:layout_width="match_parent"
-            android:layout_height="150dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <RadioGroup
-                    android:id="@+id/rbgPedido"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
-
-                </RadioGroup>
-            </LinearLayout>
-        </ScrollView>
+            android:layout_height="180dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -128,11 +114,11 @@
             android:id="@+id/tvTotalPedido"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Total del pedido: $" />
+            android:text="Total del pedido: $0" />
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="horizontal">
 
             <Button
