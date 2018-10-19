@@ -135,7 +135,12 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                 {
                     String[] ingresado = textohora.split(":");
                     hora = Integer.valueOf(ingresado[0]);
-                    minutos = Integer.valueOf(ingresado[1]);
+                    if(ingresado.length>1)
+                    {
+                        minutos = Integer.valueOf(ingresado[1]);
+                    }
+                    else minutos = 0;//Si solo ingreso un numero lo considero como hora
+
                     if(hora<0 || hora>23)
                     {
                         errores.add("La hora ingresada ("+hora+") es incorrecta");
