@@ -45,7 +45,10 @@ public class NuevoPedidoActivity extends AppCompatActivity {
     Button btHacerPedido;
     EditText etHoraSeleccionada;
     Double costoActual = 0.0;
-    Integer seleccionado = -1;
+
+    Integer selectedIndex = -1;
+    View selectedView = null;
+
     int defaultBackColor = -1;
 
 
@@ -190,15 +193,30 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         lvPedido.setOnItemLongClickListener(new ListView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if(seleccionado == i)
-                {
+                if(selectedIndex == i)
+                {//Si estaba seleccionado, lo deselecciono
                     view.setBackgroundColor(defaultBackColor);
-                    seleccionado = -1;
+
+                    selectedIndex = -1;
+                    selectedView = null;
+                }
+                else if(selectedIndex == -1)
+                {//Si no habia nada seleccionado, lo selecciono
+                    selectedIndex = i;
+                    selectedView = view;
+
+                    defaultBackColor = view.getSolidColor();
+
+                    view.setBackgroundColor(Color.YELLOW);
                 }
                 else
-                {
-                    seleccionado = i;
+                {//Ya habia algo seleccionado, cambio la seleccion
+                    selectedView.setBackgroundColor(defaultBackColor);
+
+                    selectedIndex = i;
+                    selectedView = view;
                     defaultBackColor = view.getSolidColor();
+
                     view.setBackgroundColor(Color.YELLOW);
                 }
                 return false;
@@ -208,10 +226,15 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         btQuitarProducto.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(seleccionado != -1)
+                if(selectedIndex != -1)
                 {
-                    PedidoDetalle p = adapter.getItem(seleccionado);
+                    //restauro el color al item por que se va a reusar para el que "viene" despues
+                    selectedView.setBackgroundColor(defaultBackColor);
+
+                    PedidoDetalle p = adapter.getItem(selectedIndex);
                     adapter.remove(p);
+                    selectedIndex = -1;
+                    selectedView = null;
                     adapter.notifyDataSetChanged();
                 }
             }
