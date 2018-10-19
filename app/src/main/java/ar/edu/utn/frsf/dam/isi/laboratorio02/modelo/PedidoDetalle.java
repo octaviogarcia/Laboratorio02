@@ -46,7 +46,6 @@ public class PedidoDetalle {
         this.pedido = pedido;
         pedido.agregarDetalle(this);
     }
-
     @Override
     public String toString() {
         return producto.getNombre() + "( $"+producto.getPrecio()+")"+ cantidad;

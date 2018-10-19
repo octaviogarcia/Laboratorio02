@@ -20,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         final Intent intentListaProductos = new Intent(this, ListaProductosActivity.class);
         final Intent intentNuevoPedido = new Intent(this,NuevoPedidoActivity.class);
+        final Intent intentHistorial = new Intent(this,HistorialPedidoActivity.class);
         btnNuevoPedido = (Button) findViewById(R.id.btnMainNuevoPedido);
         btnNuevoPedido.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -32,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
         btnHistorial.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                startActivity(intentHistorial);
             }
         });
 

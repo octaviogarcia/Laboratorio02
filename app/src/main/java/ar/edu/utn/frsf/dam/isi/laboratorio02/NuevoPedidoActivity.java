@@ -2,9 +2,12 @@ package ar.edu.utn.frsf.dam.isi.laboratorio02;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -27,10 +30,13 @@ import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoDetalle;
 public class NuevoPedidoActivity extends AppCompatActivity {
     EditText etCorreoElectronico;
     Button btAgregarProducto;
+    Button btQuitarProducto;
+    Button btVolver;
     ListView lvPedido;
     ArrayAdapter<PedidoDetalle> adapter;
     RadioButton rbLocal;
     RadioButton rbDomicilio;
+    RadioGroup rbgModoDeEntrega;
     EditText etDireccion;
     ProductoRepository productoRepository;
     PedidoRepository pedidoRepository;
@@ -39,12 +45,17 @@ public class NuevoPedidoActivity extends AppCompatActivity {
     Button btHacerPedido;
     EditText etHoraSeleccionada;
     Double costoActual = 0.0;
+    Integer seleccionado = -1;
+    int defaultBackColor = -1;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.nuevo_pedido);
         etCorreoElectronico = findViewById(R.id.etCorreoElectronico);
         btAgregarProducto = findViewById(R.id.btAgregarProducto);
+        btQuitarProducto = findViewById(R.id.btQuitarProducto);
         lvPedido = findViewById(R.id.lvPedido);
         rbLocal = findViewById(R.id.rbLocal);
         rbDomicilio = findViewById(R.id.rbDomicilio);
@@ -52,7 +63,12 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         tvTotalPedido = findViewById(R.id.tvTotalPedido);
         btHacerPedido = findViewById(R.id.btHacerPedido);
         etHoraSeleccionada = findViewById(R.id.etHoraSolicitada);
+        rbgModoDeEntrega = findViewById(R.id.rbgModoDeEntrega);
+        btVolver = findViewById(R.id.btVolver);
 
+        final Intent intentHistorial = new Intent(this, HistorialPedidoActivity.class);
+        final Intent intentMain = new Intent(this,MainActivity.class);
+        Intent intent = getIntent();
 
         productoRepository = new ProductoRepository();
         pedidoRepository = new PedidoRepository();
@@ -72,10 +88,19 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                 etDireccion.setEnabled(!isChecked);
             }
         });
+
+        btVolver.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(intentMain);
+            }
+        });
         rbLocal.performClick();
 
         adapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,android.R.id.text1,pedido.getDetalle());
         lvPedido.setAdapter(adapter);
+        lvPedido.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
+
 
         btHacerPedido.setOnClickListener(new Button.OnClickListener() {
             @Override
@@ -84,7 +109,7 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                 String correo = etCorreoElectronico.getText().toString();
                 if(correo.isEmpty())
                 {
-                    errores.add("Se necesita un correo electornico");
+                    errores.add("Se necesita un correo electronico");
                 }
 
                 if(rbDomicilio.isChecked())
@@ -158,9 +183,78 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                 adapter = new ArrayAdapter<>(NuevoPedidoActivity.this,android.R.layout.simple_list_item_1,android.R.id.text1,pedido.getDetalle());
                 lvPedido.setAdapter(adapter);
 
-                //TODO: pasar a actividad "Historial de pedido"
+                startActivity(intentHistorial);
             }
         });
+
+        lvPedido.setOnItemLongClickListener(new ListView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                if(seleccionado == i)
+                {
+                    view.setBackgroundColor(defaultBackColor);
+                    seleccionado = -1;
+                }
+                else
+                {
+                    seleccionado = i;
+                    defaultBackColor = view.getSolidColor();
+                    view.setBackgroundColor(Color.YELLOW);
+                }
+                return false;
+            }
+        });
+
+        btQuitarProducto.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(seleccionado != -1)
+                {
+                    PedidoDetalle p = adapter.getItem(seleccionado);
+                    adapter.remove(p);
+                    adapter.notifyDataSetChanged();
+                }
+            }
+        });
+
+
+
+        Integer id = intent.getIntExtra("Id pedido",-1);
+        if(id != -1){
+            etCorreoElectronico.setEnabled(false);
+            btAgregarProducto.setEnabled(false);
+            rbgModoDeEntrega.setEnabled(false);
+            rbDomicilio.setEnabled(false);
+            rbLocal.setEnabled(false);
+            etDireccion.setEnabled(false);
+            etHoraSeleccionada.setEnabled(false);
+
+            btHacerPedido.setEnabled(false);
+            btQuitarProducto.setEnabled(false);
+
+            btVolver.setOnClickListener(new Button.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    startActivity(intentHistorial);
+                }
+            });
+
+            Pedido pedido = pedidoRepository.buscarPorId(id);
+
+            etCorreoElectronico.setText(pedido.getMailContacto());
+            etHoraSeleccionada.setText(pedido.getFecha().toString());
+            if(pedido.getRetirar()){
+                rbLocal.setChecked(true);
+            }
+            else{
+                rbDomicilio.setChecked(true);
+                etDireccion.setText(pedido.getDireccionEnvio());
+                etDireccion.setEnabled(false);
+            }
+
+            adapter.addAll(pedido.getDetalle());
+            adapter.notifyDataSetChanged();
+        }
     }
     @Override
     protected void onActivityResult(int request,int result, Intent data)
@@ -186,6 +280,7 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                 pedido.agregarDetalle(pd);
                 costoActual+= pd.getProducto().getPrecio()*cantidad;
                 tvTotalPedido.setText(String.format("Total del pedido: $%f",costoActual));
+                adapter.notifyDataSetChanged();
             }
         }
     }
