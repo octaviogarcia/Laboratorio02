@@ -254,6 +254,7 @@ public class NuevoPedidoActivity extends AppCompatActivity {
 
             btHacerPedido.setEnabled(false);
             btQuitarProducto.setEnabled(false);
+            lvPedido.setLongClickable(false);
 
             btVolver.setOnClickListener(new Button.OnClickListener() {
                 @Override
