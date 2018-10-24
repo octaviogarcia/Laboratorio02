@@ -117,19 +117,19 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
+                        Intent broadcastIntent = new Intent(NuevoPedidoActivity.this,EstadoPedidoReceiver.class);
+                        broadcastIntent.setAction(EstadoPedidoReceiver.ESTADO_ACEPTADO);
+
                         // buscar pedidos no aceptados y aceptarlos utomáticamente
                         List<Pedido> lista = pedidoRepository.getLista();
                         for(Pedido p: lista){
                             if(p.getEstado().equals(Pedido.Estado.REALIZADO))
+                            {
+                                broadcastIntent.putExtra("idPedido",p.getId());
                                 p.setEstado(Pedido.Estado.ACEPTADO);
+                                sendBroadcast(broadcastIntent);
+                            }
                         }
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(NuevoPedidoActivity.this,
-                                        "Informacion de pedidos actualizada!",
-                                        Toast.LENGTH_LONG).show();
-                            }});
                     }
 
                 };
