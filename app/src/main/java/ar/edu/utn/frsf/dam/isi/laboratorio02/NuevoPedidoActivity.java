@@ -113,7 +113,7 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-                            Thread.currentThread().sleep(10000);
+                            Thread.currentThread().sleep(5000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -274,8 +274,8 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         });
 
 
-
         Integer id = intent.getIntExtra("Id pedido",-1);
+        System.out.println("Se recibio Id pedido = "+id.toString());
         if(id != -1){
             etCorreoElectronico.setEnabled(false);
             btAgregarProducto.setEnabled(false);
