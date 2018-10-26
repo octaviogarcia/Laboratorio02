@@ -21,6 +21,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.PedidoRepository;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.ProductoRepository;
@@ -50,6 +51,7 @@ public class NuevoPedidoActivity extends AppCompatActivity {
     View selectedView = null;
 
     int defaultBackColor = -1;
+    static final int segundos = 10;
 
 
     @Override
@@ -108,6 +110,33 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         btHacerPedido.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.currentThread().sleep(segundos*1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        Intent broadcastIntent = new Intent(NuevoPedidoActivity.this,EstadoPedidoReceiver.class);
+                        broadcastIntent.setAction(EstadoPedidoReceiver.ESTADO_ACEPTADO);
+
+                        // buscar pedidos no aceptados y aceptarlos utomáticamente
+                        List<Pedido> lista = pedidoRepository.getLista();
+                        for(Pedido p: lista){
+                            if(p.getEstado().equals(Pedido.Estado.REALIZADO))
+                            {
+                                broadcastIntent.putExtra("idPedido",p.getId());
+                                p.setEstado(Pedido.Estado.ACEPTADO);
+                                sendBroadcast(broadcastIntent);
+                            }
+                        }
+                    }
+
+                };
+                Thread unHilo = new Thread(r);
+                unHilo.start();
+
                 ArrayList<String> errores = new ArrayList<>();
                 String correo = etCorreoElectronico.getText().toString();
                 if(correo.isEmpty())
@@ -246,8 +275,8 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         });
 
 
-
-        Integer id = intent.getIntExtra("Id pedido",-1);
+        Integer id = intent.getIntExtra("Id_pedido",-1);
+        System.out.println("Se recibio Id pedido = "+id.toString());
         if(id != -1){
             etCorreoElectronico.setEnabled(false);
             btAgregarProducto.setEnabled(false);
