@@ -51,6 +51,7 @@ public class NuevoPedidoActivity extends AppCompatActivity {
     View selectedView = null;
 
     int defaultBackColor = -1;
+    static final int segundos = 10;
 
 
     @Override
@@ -113,23 +114,23 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-                            Thread.currentThread().sleep(10000);
+                            Thread.currentThread().sleep(segundos*1000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
+                        Intent broadcastIntent = new Intent(NuevoPedidoActivity.this,EstadoPedidoReceiver.class);
+                        broadcastIntent.setAction(EstadoPedidoReceiver.ESTADO_ACEPTADO);
+
                         // buscar pedidos no aceptados y aceptarlos utomáticamente
                         List<Pedido> lista = pedidoRepository.getLista();
                         for(Pedido p: lista){
                             if(p.getEstado().equals(Pedido.Estado.REALIZADO))
+                            {
+                                broadcastIntent.putExtra("idPedido",p.getId());
                                 p.setEstado(Pedido.Estado.ACEPTADO);
+                                sendBroadcast(broadcastIntent);
+                            }
                         }
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(NuevoPedidoActivity.this,
-                                        "Informacion de pedidos actualizada!",
-                                        Toast.LENGTH_LONG).show();
-                            }});
                     }
 
                 };
@@ -274,8 +275,8 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         });
 
 
-
-        Integer id = intent.getIntExtra("Id pedido",-1);
+        Integer id = intent.getIntExtra("Id_pedido",-1);
+        System.out.println("Se recibio Id pedido = "+id.toString());
         if(id != -1){
             etCorreoElectronico.setEnabled(false);
             btAgregarProducto.setEnabled(false);

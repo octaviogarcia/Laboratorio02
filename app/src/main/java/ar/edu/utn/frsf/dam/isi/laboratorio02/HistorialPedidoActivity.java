@@ -67,7 +67,7 @@ public class HistorialPedidoActivity extends AppCompatActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Pedido p = (Pedido) adapterView.getItemAtPosition(i);
-                intentNuevoPedido.putExtra("Id pedido", p.getId());
+                intentNuevoPedido.putExtra("Id_pedido", p.getId());
                 startActivity(intentNuevoPedido);
                 return false;
             }

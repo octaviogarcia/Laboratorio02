@@ -51,7 +51,7 @@ public class PedidoAdapter extends ArrayAdapter<Pedido> {
         pediHolder.tvPrecio.setText("A pagar $: "+pedido.total().toString());
 
         //Ponemos esta imagen por que no encontramos la pedida
-        pediHolder.tipoEntrega.setImageResource(R.drawable.utencillos);
+        pediHolder.tipoEntrega.setImageResource(R.drawable.retira);
 
         switch(pedido.getEstado())
         {
