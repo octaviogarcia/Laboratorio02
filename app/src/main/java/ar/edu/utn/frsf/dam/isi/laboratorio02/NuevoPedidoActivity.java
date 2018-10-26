@@ -51,6 +51,7 @@ public class NuevoPedidoActivity extends AppCompatActivity {
     View selectedView = null;
 
     int defaultBackColor = -1;
+    static final int segundos = 10;
 
 
     @Override
@@ -113,7 +114,7 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-                            Thread.currentThread().sleep(5000);
+                            Thread.currentThread().sleep(segundos*1000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -274,7 +275,7 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         });
 
 
-        Integer id = intent.getIntExtra("Id pedido",-1);
+        Integer id = intent.getIntExtra("Id_pedido",-1);
         System.out.println("Se recibio Id pedido = "+id.toString());
         if(id != -1){
             etCorreoElectronico.setEnabled(false);
