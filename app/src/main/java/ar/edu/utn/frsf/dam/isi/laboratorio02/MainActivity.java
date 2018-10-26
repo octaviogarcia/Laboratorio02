@@ -15,7 +15,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnNuevoPedido;
     private Button btnHistorial;
     private Button btnListaProductos;
-
+    private Button btnPrepararPedidos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +47,14 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 intentListaProductos.putExtra("VentanaPrincipal",true);
                 startActivityForResult(intentListaProductos,CodigosLlamadas.MAIN_A_LISTARPRODUCTOS.ordinal());
+            }
+        });
+
+        btnPrepararPedidos = (Button) findViewById(R.id.btnPrepararPedidos);
+        btnPrepararPedidos.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //Crear un intent service
             }
         });
     }
