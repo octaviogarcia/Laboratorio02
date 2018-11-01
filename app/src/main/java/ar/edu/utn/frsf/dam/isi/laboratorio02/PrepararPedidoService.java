@@ -14,7 +14,7 @@ import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Pedido;
 
 public class PrepararPedidoService extends IntentService {
 
-    private final static int segundos = 5;
+    private final static int segundos = 20;
     public PrepararPedidoService() {
         super("PrepararPedidoService");
     }
