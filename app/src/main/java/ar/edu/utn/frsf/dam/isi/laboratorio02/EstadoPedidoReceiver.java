@@ -11,6 +11,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.PedidoRepository;
@@ -34,13 +35,9 @@ public class EstadoPedidoReceiver extends BroadcastReceiver {
             {
                 String contenido = String.format("El costo sera de $%f\n Previsto el envio para %s",p.total(),p.getFecha().toString());
 
-                //TODO: por alguna razon no puedo hacer q habra directamente el pedido, me lo abre vacio, no recipe el id pedido
                 Intent destino = new Intent(context,NuevoPedidoActivity.class);
-                //Intent destino = new Intent(context,HistorialPedidoActivity.class);
-                //destino.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 destino.putExtra("Id_pedido", p.getId());
-                System.out.println("Se envio Id pedido = "+p.getId().toString());
-                PendingIntent pendingDestino = PendingIntent.getActivity(context, 0,destino,PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent pendingDestino = PendingIntent.getActivity(context, 0,destino,0);
 
                 //@TODO: CANAL01 hardcodeado?
                 Notification notification = new NotificationCompat.Builder(context,"CANAL01")
@@ -55,6 +52,29 @@ public class EstadoPedidoReceiver extends BroadcastReceiver {
                 notificationManager.notify(99,notification);
 
             }
+        }
+        else if(intent.getAction().equals(ESTADO_EN_PREPARACION))
+        {
+            ArrayList<Integer> pedidosRealizados = intent.getIntegerArrayListExtra("pedidosRealizados");
+            if(pedidosRealizados != null)
+            {
+                String contenido = String.format("Se han realizado %d pedidos",pedidosRealizados.size());
+                Intent destino = new Intent(context,HistorialPedidoActivity.class);
+                PendingIntent pendingDestino = PendingIntent.getActivity(context, 0,destino,0);
+                //TODO: CANAL01 hardcodeado
+                Notification notification = new NotificationCompat.Builder(context,"CANAL01")
+                        .setSmallIcon(R.drawable.retira)
+                        .setContentTitle("Pedidos realizados")
+                        .setContentText(contenido)
+                        .setAutoCancel(true)
+                        .setContentIntent(pendingDestino)
+                        .build();
+
+                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+                notificationManager.notify(99,notification);
+
+            }
+
         }
         else throw new UnsupportedOperationException("Not yet implemented");
     }

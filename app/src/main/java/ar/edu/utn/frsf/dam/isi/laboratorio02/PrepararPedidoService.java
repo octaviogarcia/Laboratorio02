@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.PedidoRepository;
@@ -37,13 +38,16 @@ public class PrepararPedidoService extends IntentService {
         Intent broadcastIntent = new Intent(PrepararPedidoService.this,EstadoPedidoReceiver.class);
         broadcastIntent.setAction(EstadoPedidoReceiver.ESTADO_EN_PREPARACION);
 
+        ArrayList<Integer> pedidosRealizados = new ArrayList<>();
         for(Pedido p : listaPedidos)
         {
             if(p.getEstado().equals(Pedido.Estado.ACEPTADO))
             {
-                p.setEstado(Pedido.Estado.REALIZADO);
+                p.setEstado(Pedido.Estado.EN_PREPARACION);
+                pedidosRealizados.add(p.getId());
             }
         }
+        broadcastIntent.putIntegerArrayListExtra("pedidosRealizados",pedidosRealizados);
         sendBroadcast(broadcastIntent);
     }
 }
