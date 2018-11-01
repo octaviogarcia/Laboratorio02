@@ -276,7 +276,6 @@ public class NuevoPedidoActivity extends AppCompatActivity {
 
 
         Integer id = intent.getIntExtra("Id_pedido",-1);
-        System.out.println("Se recibio Id pedido = "+id.toString());
         if(id != -1){
             etCorreoElectronico.setEnabled(false);
             btAgregarProducto.setEnabled(false);
