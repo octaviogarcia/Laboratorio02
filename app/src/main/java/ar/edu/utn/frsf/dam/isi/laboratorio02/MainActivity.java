@@ -25,7 +25,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         createNotificationChannel();
-        Log.d("Token", FirebaseInstanceId.getInstance().getToken());
+        {
+            String token = FirebaseInstanceId.getInstance().getToken();
+            Log.d("Token", token != null? token : "none");
+        }
         final Intent intentListaProductos = new Intent(this, ListaProductosActivity.class);
         final Intent intentNuevoPedido = new Intent(this,NuevoPedidoActivity.class);
         final Intent intentHistorial = new Intent(this,HistorialPedidoActivity.class);
