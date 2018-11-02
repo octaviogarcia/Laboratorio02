@@ -7,21 +7,28 @@ import android.content.Intent;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+
+import com.google.firebase.iid.FirebaseInstanceId;
 
 public class MainActivity extends AppCompatActivity {
 
     private Button btnNuevoPedido;
     private Button btnHistorial;
     private Button btnListaProductos;
-
+    private Button btnPrepararPedidos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         createNotificationChannel();
+        {
+            String token = FirebaseInstanceId.getInstance().getToken();
+            Log.d("Token", token != null? token : "none");
+        }
         final Intent intentListaProductos = new Intent(this, ListaProductosActivity.class);
         final Intent intentNuevoPedido = new Intent(this,NuevoPedidoActivity.class);
         final Intent intentHistorial = new Intent(this,HistorialPedidoActivity.class);
@@ -47,6 +54,15 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 intentListaProductos.putExtra("VentanaPrincipal",true);
                 startActivityForResult(intentListaProductos,CodigosLlamadas.MAIN_A_LISTARPRODUCTOS.ordinal());
+            }
+        });
+
+        btnPrepararPedidos = (Button) findViewById(R.id.btnPrepararPedidos);
+        btnPrepararPedidos.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this,PrepararPedidoService.class);
+                startService(intent);
             }
         });
     }
