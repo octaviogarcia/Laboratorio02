@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnListaProductos;
     private Button btnPrepararPedidos;
     private Button btnConfiguracion;
-
+    private Button btnCategorias;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
         final Intent intentNuevoPedido = new Intent(this,NuevoPedidoActivity.class);
         final Intent intentHistorial = new Intent(this,HistorialPedidoActivity.class);
         final Intent intentConfiguracion = new Intent(this,ConfiguracionActivity.class);
+        final Intent intentCategorias = new Intent(this,CategoriaActivity.class);
 
         btnNuevoPedido = (Button) findViewById(R.id.btnMainNuevoPedido);
         btnNuevoPedido.setOnClickListener(new View.OnClickListener() {
@@ -74,6 +75,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(intentConfiguracion);
+            }
+        });
+
+        btnCategorias = (Button) findViewById(R.id.btnCategorias);
+        btnCategorias.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(intentCategorias);
             }
         });
     }
