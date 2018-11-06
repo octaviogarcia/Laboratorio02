@@ -2,7 +2,9 @@ package ar.edu.utn.frsf.dam.isi.laboratorio02;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -29,6 +31,7 @@ import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Pedido;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoDetalle;
 
 public class NuevoPedidoActivity extends AppCompatActivity {
+    public static final String extraIdPedido  = "Id_pedido";
     EditText etCorreoElectronico;
     Button btAgregarProducto;
     Button btQuitarProducto;
@@ -58,10 +61,18 @@ public class NuevoPedidoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.nuevo_pedido);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+
+
         etCorreoElectronico = findViewById(R.id.etCorreoElectronico);
+        String defaultCorreo = sharedPreferences.getString("etCorreoElectronico","");
+        etCorreoElectronico.setText(defaultCorreo);
+
         btAgregarProducto = findViewById(R.id.btAgregarProducto);
         btQuitarProducto = findViewById(R.id.btQuitarProducto);
         lvPedido = findViewById(R.id.lvPedido);
+
         rbLocal = findViewById(R.id.rbLocal);
         rbDomicilio = findViewById(R.id.rbDomicilio);
         etDireccion = findViewById(R.id.etDireccion);
@@ -73,7 +84,6 @@ public class NuevoPedidoActivity extends AppCompatActivity {
 
         final Intent intentHistorial = new Intent(this, HistorialPedidoActivity.class);
         final Intent intentMain = new Intent(this,MainActivity.class);
-        Intent intent = getIntent();
 
         productoRepository = new ProductoRepository();
         pedidoRepository = new PedidoRepository();
@@ -100,7 +110,12 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                 startActivity(intentMain);
             }
         });
-        rbLocal.performClick();
+
+        if(sharedPreferences.getBoolean("cbRetirar",true))
+        {
+            rbLocal.performClick();
+        }
+        else rbDomicilio.performClick();
 
         adapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,android.R.id.text1,pedido.getDetalle());
         lvPedido.setAdapter(adapter);
@@ -275,7 +290,8 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         });
 
 
-        Integer id = intent.getIntExtra("Id_pedido",-1);
+        Intent intent = getIntent();
+        Integer id = intent.getIntExtra(extraIdPedido,-1);
         if(id != -1){
             etCorreoElectronico.setEnabled(false);
             btAgregarProducto.setEnabled(false);
