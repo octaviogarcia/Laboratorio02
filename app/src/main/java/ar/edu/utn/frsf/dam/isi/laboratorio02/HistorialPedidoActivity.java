@@ -3,6 +3,7 @@ package ar.edu.utn.frsf.dam.isi.laboratorio02;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView;
@@ -67,7 +68,7 @@ public class HistorialPedidoActivity extends AppCompatActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Pedido p = (Pedido) adapterView.getItemAtPosition(i);
-                intentNuevoPedido.putExtra("Id_pedido", p.getId());
+                intentNuevoPedido.putExtra(NuevoPedidoActivity.extraIdPedido, p.getId());
                 startActivity(intentNuevoPedido);
                 return false;
             }

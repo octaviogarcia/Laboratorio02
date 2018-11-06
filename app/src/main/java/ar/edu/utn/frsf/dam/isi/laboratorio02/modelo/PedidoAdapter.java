@@ -102,7 +102,7 @@ public class PedidoAdapter extends ArrayAdapter<Pedido> {
         new Button.OnClickListener() {
               @Override
               public void onClick(View view) {
-                  intentNuevoPedido.putExtra("Id pedido", ((Pedido)view.getTag()).getId());
+                  intentNuevoPedido.putExtra(NuevoPedidoActivity.extraIdPedido, ((Pedido)view.getTag()).getId());
                   ctx.startActivity(intentNuevoPedido);
               }
           }

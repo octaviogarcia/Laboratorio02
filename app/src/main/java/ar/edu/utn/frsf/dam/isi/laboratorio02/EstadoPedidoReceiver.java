@@ -38,7 +38,7 @@ public class EstadoPedidoReceiver extends BroadcastReceiver {
                 String contenido = String.format("El costo sera de $%f\n Previsto el envio para %s",p.total(),p.getFecha().toString());
 
                 Intent destino = new Intent(context,NuevoPedidoActivity.class);
-                destino.putExtra("Id_pedido", p.getId());
+                destino.putExtra(NuevoPedidoActivity.extraIdPedido, p.getId());
                 PendingIntent pendingDestino = PendingIntent.getActivity(context, 0,destino,0);
 
                 //@TODO: CANAL01 hardcodeado?
