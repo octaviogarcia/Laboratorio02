@@ -11,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
@@ -32,11 +33,13 @@ import java.util.concurrent.ExecutionException;
 public class ListaProductosActivity extends AppCompatActivity {
     private Spinner spinnerCatProd;
     private ProductoRepository productoRepository;
-    private RadioGroup radioGroup;
     private Button btnAgregar;
     private Intent intent;
     private EditText etCantidad;
 
+    private ListView lvProductos;
+    ArrayAdapter<Categoria> adapterCategoria = null;
+    ArrayAdapter<Producto> adapterProducto = null;
     final CategoriaRest categoriaRest = new CategoriaRest();
 
     private class AsyncCategoriaGET extends AsyncTask<Void,Double,List<Categoria>>
@@ -64,10 +67,10 @@ public class ListaProductosActivity extends AppCompatActivity {
         setContentView(R.layout.lista_productos);
 
         spinnerCatProd = findViewById(R.id.spinnerCatProd);
-        radioGroup = findViewById(R.id.radioGroup);
         productoRepository = new ProductoRepository();
         btnAgregar = findViewById(R.id.btnAgregar);
         etCantidad = findViewById(R.id.etCantidad);
+        lvProductos = findViewById(R.id.lvProductos);
         intent = getIntent();
 
         AsyncCategoriaGET asyncCategoriaGET = new AsyncCategoriaGET();
@@ -80,14 +83,15 @@ public class ListaProductosActivity extends AppCompatActivity {
         btnAgregar.setOnClickListener( new Button.OnClickListener(){
             @Override
             public void onClick(View view) {
-                RadioButton rb = findViewById(radioGroup.getCheckedRadioButtonId());
+                Integer index = lvProductos.getCheckedItemPosition();
                 String cantidad = etCantidad.getText().toString();
-                if (rb == null || cantidad.isEmpty())
+                if (index == -1 || cantidad.isEmpty())
                 {
                     //Nada seleccionado, ignoro
                     return;
                 }
-                Integer idProducto = rb.getId();
+                Producto selectedItem = adapterProducto.getItem(index);
+                Integer idProducto = selectedItem.getId();
                 Intent intentResultado = new Intent();
 
                 intentResultado.putExtra("cantidad",Integer.valueOf(cantidad));
@@ -110,18 +114,9 @@ public class ListaProductosActivity extends AppCompatActivity {
     private void setearCategorias(final List<Categoria> listaCat) {
         if(listaCat == null) return;
 
-        List<String> listaCatString = new ArrayList<>();
-        for (Categoria c: listaCat) {
-            listaCatString.add(c.getNombre());
-        }
-        //Creating the ArrayAdapter instance having the country list
-        ArrayAdapter<String> aa = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item,listaCatString);
-        aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        //Setting the ArrayAdapter data on the Spinner
-        spinnerCatProd.setAdapter(aa);
-        Integer catID = spinnerCatProd.getSelectedItemPosition();
-        Categoria cat = listaCat.get(catID);
-        //listarProductos(cat);
+        adapterCategoria = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item,listaCat);
+        adapterCategoria.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCatProd.setAdapter(adapterCategoria);
         spinnerCatProd.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
@@ -146,12 +141,9 @@ public class ListaProductosActivity extends AppCompatActivity {
         };
 
         listaProd.sort(comp);
-        radioGroup.removeAllViews();
-        for(Producto p : listaProd){
-            RadioButton rb = new RadioButton(this);
-            rb.setId(p.getId());
-            rb.setText(p.getNombre());
-            radioGroup.addView(rb);
-        }
+
+        adapterProducto = new ArrayAdapter<>(this,android.R.layout.simple_list_item_single_choice,listaProd);
+        lvProductos.setAdapter(adapterProducto);
+        lvProductos.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
     }
 }

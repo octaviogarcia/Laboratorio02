@@ -9,6 +9,7 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
@@ -57,10 +58,6 @@ public class NuevoPedidoActivity extends AppCompatActivity {
     EditText etHoraSeleccionada;
     Double costoActual = 0.0;
 
-    Integer selectedIndex = -1;
-    View selectedView = null;
-
-    int defaultBackColor = -1;
     static final int segundos = 10;
 
 
@@ -122,10 +119,9 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         }
         else rbDomicilio.performClick();
 
-        adapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,android.R.id.text1,pedido.getDetalle());
+        adapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_multiple_choice,android.R.id.text1,pedido.getDetalle());
         lvPedido.setAdapter(adapter);
-        lvPedido.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
-
+        lvPedido.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 
         btHacerPedido.setOnClickListener(new Button.OnClickListener() {
             @Override
@@ -244,53 +240,24 @@ public class NuevoPedidoActivity extends AppCompatActivity {
             }
         });
 
-        lvPedido.setOnItemLongClickListener(new ListView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if(selectedIndex == i)
-                {//Si estaba seleccionado, lo deselecciono
-                    view.setBackgroundColor(defaultBackColor);
-
-                    selectedIndex = -1;
-                    selectedView = null;
-                }
-                else if(selectedIndex == -1)
-                {//Si no habia nada seleccionado, lo selecciono
-                    selectedIndex = i;
-                    selectedView = view;
-
-                    defaultBackColor = view.getSolidColor();
-
-                    view.setBackgroundColor(Color.YELLOW);
-                }
-                else
-                {//Ya habia algo seleccionado, cambio la seleccion
-                    selectedView.setBackgroundColor(defaultBackColor);
-
-                    selectedIndex = i;
-                    selectedView = view;
-                    defaultBackColor = view.getSolidColor();
-
-                    view.setBackgroundColor(Color.YELLOW);
-                }
-                return false;
-            }
-        });
-
         btQuitarProducto.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(selectedIndex != -1)
+                SparseBooleanArray checked = lvPedido.getCheckedItemPositions();
+                List<PedidoDetalle> toRemove= new ArrayList<>();
+                for(int i = 0;i < adapter.getCount();i++)
                 {
-                    //restauro el color al item por que se va a reusar para el que "viene" despues
-                    selectedView.setBackgroundColor(defaultBackColor);
-
-                    PedidoDetalle p = adapter.getItem(selectedIndex);
-                    adapter.remove(p);
-                    selectedIndex = -1;
-                    selectedView = null;
-                    adapter.notifyDataSetChanged();
+                    if(checked.get(i))
+                    {
+                        PedidoDetalle pd =  adapter.getItem(i);
+                        toRemove.add(pd);
+                        //Le saco el check al view
+                        lvPedido.setItemChecked(i,false);
+                    }
                 }
+                for(PedidoDetalle pd : toRemove) adapter.remove(pd);
+
+                adapter.notifyDataSetChanged();
             }
         });
 
@@ -308,7 +275,8 @@ public class NuevoPedidoActivity extends AppCompatActivity {
 
             btHacerPedido.setEnabled(false);
             btQuitarProducto.setEnabled(false);
-            lvPedido.setLongClickable(false);
+
+            lvPedido.setEnabled(false);
 
             btVolver.setOnClickListener(new Button.OnClickListener() {
                 @Override
