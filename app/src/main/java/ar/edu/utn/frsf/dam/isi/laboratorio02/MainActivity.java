@@ -13,6 +13,14 @@ import android.widget.Button;
 
 import com.google.firebase.iid.FirebaseInstanceId;
 
+import org.json.JSONException;
+
+import java.io.IOException;
+import java.util.List;
+
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.CategoriaRest;
+
 public class MainActivity extends AppCompatActivity {
 
     private Button btnNuevoPedido;
@@ -28,13 +36,13 @@ public class MainActivity extends AppCompatActivity {
         createNotificationChannel();
         {
             String token = FirebaseInstanceId.getInstance().getToken();
-            Log.d("Token", token != null? token : "none");
+            Log.d("Token", token != null ? token : "none");
         }
         final Intent intentListaProductos = new Intent(this, ListaProductosActivity.class);
-        final Intent intentNuevoPedido = new Intent(this,NuevoPedidoActivity.class);
-        final Intent intentHistorial = new Intent(this,HistorialPedidoActivity.class);
-        final Intent intentConfiguracion = new Intent(this,ConfiguracionActivity.class);
-        final Intent intentCategorias = new Intent(this,CategoriaActivity.class);
+        final Intent intentNuevoPedido = new Intent(this, NuevoPedidoActivity.class);
+        final Intent intentHistorial = new Intent(this, HistorialPedidoActivity.class);
+        final Intent intentConfiguracion = new Intent(this, ConfiguracionActivity.class);
+        final Intent intentCategorias = new Intent(this, CategoriaActivity.class);
 
         btnNuevoPedido = (Button) findViewById(R.id.btnMainNuevoPedido);
         btnNuevoPedido.setOnClickListener(new View.OnClickListener() {
@@ -56,8 +64,8 @@ public class MainActivity extends AppCompatActivity {
         btnListaProductos.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                intentListaProductos.putExtra("VentanaPrincipal",true);
-                startActivityForResult(intentListaProductos,CodigosLlamadas.MAIN_A_LISTARPRODUCTOS.ordinal());
+                intentListaProductos.putExtra("VentanaPrincipal", true);
+                startActivityForResult(intentListaProductos, CodigosLlamadas.MAIN_A_LISTARPRODUCTOS.ordinal());
             }
         });
 
@@ -65,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
         btnPrepararPedidos.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this,PrepararPedidoService.class);
+                Intent intent = new Intent(MainActivity.this, PrepararPedidoService.class);
                 startService(intent);
             }
         });
@@ -85,8 +93,9 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intentCategorias);
             }
         });
+
     }
-    @Override
+        @Override
     protected void onActivityResult(int request,int result, Intent data)
     {//Dejo el esqueleto para acordarme nomas
         if(result == Activity.RESULT_OK)

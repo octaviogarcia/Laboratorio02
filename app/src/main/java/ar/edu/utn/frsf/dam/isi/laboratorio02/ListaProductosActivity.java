@@ -2,8 +2,10 @@ package ar.edu.utn.frsf.dam.isi.laboratorio02;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -13,14 +15,19 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.ProductoRepository;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.CategoriaRest;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Producto;
 
 import java.util.Comparator;
+import java.util.concurrent.ExecutionException;
 
 public class ListaProductosActivity extends AppCompatActivity {
     private Spinner spinnerCatProd;
@@ -29,6 +36,28 @@ public class ListaProductosActivity extends AppCompatActivity {
     private Button btnAgregar;
     private Intent intent;
     private EditText etCantidad;
+
+    final CategoriaRest categoriaRest = new CategoriaRest();
+
+    private class AsyncCategoriaGET extends AsyncTask<Void,Double,List<Categoria>>
+    {
+        @Override
+        protected List<Categoria> doInBackground(Void... voids) {
+            try
+            {
+                List<Categoria> list = categoriaRest.listarTodas();
+                return list;
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,33 +70,13 @@ public class ListaProductosActivity extends AppCompatActivity {
         etCantidad = findViewById(R.id.etCantidad);
         intent = getIntent();
 
-        final List<Categoria> listaCat = productoRepository.getCategorias();
+        AsyncCategoriaGET asyncCategoriaGET = new AsyncCategoriaGET();
+        asyncCategoriaGET.execute();
 
-        List<String> listaCatString = new ArrayList<>();
-        for (Categoria c: listaCat) {
-            listaCatString.add(c.getNombre());
-        }
-
-        //Creating the ArrayAdapter instance having the country list
-        ArrayAdapter<String> aa = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item,listaCatString);
-        aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        //Setting the ArrayAdapter data on the Spinner
-        spinnerCatProd.setAdapter(aa);
-
-        Integer catID = spinnerCatProd.getSelectedItemPosition();
-        Categoria cat = listaCat.get(catID);
-        listarProductos(cat);
-        spinnerCatProd.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-                listarProductos(listaCat.get(position));
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {}
-        });
         Boolean ventanaPrincipal = intent.getBooleanExtra("VentanaPrincipal",false);
         btnAgregar.setEnabled(!ventanaPrincipal);
         etCantidad.setEnabled(!ventanaPrincipal);
+
         btnAgregar.setOnClickListener( new Button.OnClickListener(){
             @Override
             public void onClick(View view) {
@@ -89,7 +98,40 @@ public class ListaProductosActivity extends AppCompatActivity {
             }
         });
 
+        try {
+            setearCategorias(asyncCategoriaGET.get());
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
+    private void setearCategorias(final List<Categoria> listaCat) {
+        if(listaCat == null) return;
+
+        List<String> listaCatString = new ArrayList<>();
+        for (Categoria c: listaCat) {
+            listaCatString.add(c.getNombre());
+        }
+        //Creating the ArrayAdapter instance having the country list
+        ArrayAdapter<String> aa = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item,listaCatString);
+        aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        //Setting the ArrayAdapter data on the Spinner
+        spinnerCatProd.setAdapter(aa);
+        Integer catID = spinnerCatProd.getSelectedItemPosition();
+        Categoria cat = listaCat.get(catID);
+        //listarProductos(cat);
+        spinnerCatProd.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+                listarProductos(listaCat.get(position));
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {}
+        });
+    }
+
     void listarProductos(Categoria c)
     {
         List<Producto> listaProd = productoRepository.buscarPorCategoria(c);

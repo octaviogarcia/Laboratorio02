@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,6 +14,7 @@ import android.widget.Toast;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.List;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.CategoriaRest;
@@ -45,8 +47,6 @@ public class CategoriaActivity extends AppCompatActivity {
         }
     }
 
-    AsyncCategoriaPOST asyncCategoriaPOST;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,12 +58,11 @@ public class CategoriaActivity extends AppCompatActivity {
         btnCrear.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // completer el codigo en el paso “f”
                 Categoria categoria = new Categoria();
                 String categoriaNombre = textoCat.getText().toString();
                 if(categoriaNombre.isEmpty()) return;
                 categoria.setNombre(categoriaNombre);
-                asyncCategoriaPOST = new AsyncCategoriaPOST();
+                AsyncCategoriaPOST asyncCategoriaPOST = new AsyncCategoriaPOST();
                 asyncCategoriaPOST.execute(categoria);
                 return;
             }
@@ -73,6 +72,8 @@ public class CategoriaActivity extends AppCompatActivity {
         btnMenu.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //AsyncCategoriaGET asyncCategoriaGET = new AsyncCategoriaGET();
+                //asyncCategoriaGET.execute();
                 Intent i = new Intent(CategoriaActivity.this,
                         MainActivity.class);
                 startActivity(i);
