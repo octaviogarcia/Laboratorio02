@@ -64,6 +64,10 @@ public class ListaProductosActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        AsyncCategoriaGET asyncCategoriaGET = new AsyncCategoriaGET();
+        asyncCategoriaGET.execute();
+
         setContentView(R.layout.lista_productos);
 
         spinnerCatProd = findViewById(R.id.spinnerCatProd);
@@ -73,8 +77,7 @@ public class ListaProductosActivity extends AppCompatActivity {
         lvProductos = findViewById(R.id.lvProductos);
         intent = getIntent();
 
-        AsyncCategoriaGET asyncCategoriaGET = new AsyncCategoriaGET();
-        asyncCategoriaGET.execute();
+
 
         Boolean ventanaPrincipal = intent.getBooleanExtra("VentanaPrincipal",false);
         btnAgregar.setEnabled(!ventanaPrincipal);
