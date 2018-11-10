@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncCategoriaGET;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.ProductoRepository;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.CategoriaRest;
@@ -40,26 +41,6 @@ public class ListaProductosActivity extends AppCompatActivity {
     private ListView lvProductos;
     ArrayAdapter<Categoria> adapterCategoria = null;
     ArrayAdapter<Producto> adapterProducto = null;
-    final CategoriaRest categoriaRest = new CategoriaRest();
-
-    private class AsyncCategoriaGET extends AsyncTask<Void,Double,List<Categoria>>
-    {
-        @Override
-        protected List<Categoria> doInBackground(Void... voids) {
-            try
-            {
-                List<Categoria> list = categoriaRest.listarTodas();
-                return list;
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-    }
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

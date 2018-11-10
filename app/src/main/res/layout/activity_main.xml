@@ -48,4 +48,10 @@
         android:layout_height="wrap_content"
         android:text="Categorias" />
 
+    <Button
+        android:id="@+id/btnGestionProductos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Gestion de productos" />
+
 </LinearLayout>
