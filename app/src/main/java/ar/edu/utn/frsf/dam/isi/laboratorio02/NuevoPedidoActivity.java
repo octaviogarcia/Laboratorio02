@@ -1,11 +1,13 @@
 package ar.edu.utn.frsf.dam.isi.laboratorio02;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -18,14 +20,21 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.PedidoRepository;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.ProductoRepository;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.ProductoRetrofit;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Pedido;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoDetalle;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Producto;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.RestClient;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class NuevoPedidoActivity extends AppCompatActivity {
     public static final String extraIdPedido  = "Id_pedido";
@@ -39,7 +48,8 @@ public class NuevoPedidoActivity extends AppCompatActivity {
     RadioButton rbDomicilio;
     RadioGroup rbgModoDeEntrega;
     EditText etDireccion;
-    ProductoRepository productoRepository;
+//    ProductoRepository productoRepository;
+    List<Producto> listaProductos = null;
     PedidoRepository pedidoRepository;
     Pedido pedido;
     TextView tvTotalPedido;
@@ -52,8 +62,11 @@ public class NuevoPedidoActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        cargarProductos();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.nuevo_pedido);
+
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         etCorreoElectronico = findViewById(R.id.etCorreoElectronico);
@@ -76,7 +89,8 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         final Intent intentHistorial = new Intent(this, HistorialPedidoActivity.class);
         final Intent intentMain = new Intent(this,MainActivity.class);
 
-        productoRepository = new ProductoRepository();
+
+
         pedidoRepository = new PedidoRepository();
         pedido = new Pedido();
 
@@ -291,6 +305,42 @@ public class NuevoPedidoActivity extends AppCompatActivity {
             adapter.notifyDataSetChanged();
         }
     }
+
+    private void cargarProductos() {
+        ProductoRetrofit clienteRest =
+                RestClient.getInstance()
+                        .getRetrofit()
+                        .create(ProductoRetrofit.class);
+
+        final Call<List<Producto> > listaProdCall = clienteRest.listarProductos();
+        //@TODO: Race condition? Como hago para esperar a que termine la llamada de retrofit?
+        listaProdCall.enqueue(new Callback<List<Producto>>(){
+            @Override
+            public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
+                if (response.code() == 200 || response.code() == 201) {
+                    List<Producto> productos = response.body();
+                    NuevoPedidoActivity.this.listaProductos = productos;
+                } else {
+                    @SuppressLint("DefaultLocale")
+                    String error = String.format("Error respuesta %d", response.code());
+                    Log.d("NuevoPedidoActivity", error);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Producto>> call, Throwable t) {
+                Log.d("NuevoPedidoActivity", t.getMessage());
+            }
+        });
+    }
+
+    private Producto buscarProductoPorId(Integer id) {
+        for(Producto p : listaProductos){
+            if(p.getId().equals(id)) return p;
+        }
+        return null;
+    }
+
     @Override
     protected void onActivityResult(int request,int result, Intent data)
     {//Manejo el retorno de listar pedidos
@@ -311,7 +361,8 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                         return;
                     }
                 }
-                PedidoDetalle pd = new PedidoDetalle(cantidad,productoRepository.buscarPorId(id));
+                //PedidoDetalle pd = new PedidoDetalle(cantidad,productoRepository.buscarPorId(id));
+                PedidoDetalle pd = new PedidoDetalle(cantidad,buscarProductoPorId(id));
                 pedido.agregarDetalle(pd);
                 costoActual+= pd.getProducto().getPrecio()*cantidad;
                 tvTotalPedido.setText(String.format("Total del pedido: $%f",costoActual));

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -99,6 +100,7 @@ public class PedidoAdapter extends ArrayAdapter<Pedido> {
               @Override
               public void onClick(View view) {
                   intentNuevoPedido.putExtra(NuevoPedidoActivity.extraIdPedido, ((Pedido)view.getTag()).getId());
+                  Log.d("HistorialPedidoActivity",((Pedido)view.getTag()).toString());
                   ctx.startActivity(intentNuevoPedido);
               }
           }
