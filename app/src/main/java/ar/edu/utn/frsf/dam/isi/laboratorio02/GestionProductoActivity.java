@@ -1,6 +1,7 @@
 package ar.edu.utn.frsf.dam.isi.laboratorio02;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -150,6 +151,14 @@ public class GestionProductoActivity extends AppCompatActivity {
                 Integer id = Integer.valueOf(idStr);
                 Call<Producto> borrarCall = clienteRest.borrar(id);
                 borrarCall.enqueue(new CallbackBorrarProducto());
+            }
+        });
+
+        final Intent intentMain = new Intent(this,MainActivity.class);
+        btnMenu.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(intentMain);
             }
         });
 

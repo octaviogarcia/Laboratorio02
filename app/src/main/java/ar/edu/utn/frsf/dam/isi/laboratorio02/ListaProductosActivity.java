@@ -1,9 +1,11 @@
 package ar.edu.utn.frsf.dam.isi.laboratorio02;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -12,14 +14,20 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncCategoriaGET;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.ProductoRepository;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.ProductoRetrofit;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Producto;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.RestClient;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ListaProductosActivity extends AppCompatActivity {
     private Spinner spinnerCatProd;
@@ -31,6 +39,8 @@ public class ListaProductosActivity extends AppCompatActivity {
     private ListView lvProductos;
     ArrayAdapter<Categoria> adapterCategoria = null;
     ArrayAdapter<Producto> adapterProducto = null;
+
+    private List<Producto> listaProd = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +101,7 @@ public class ListaProductosActivity extends AppCompatActivity {
         adapterCategoria = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item,listaCat);
         adapterCategoria.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCatProd.setAdapter(adapterCategoria);
+        listarProductosInicial(listaCat.get(0));
         spinnerCatProd.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
@@ -101,9 +112,43 @@ public class ListaProductosActivity extends AppCompatActivity {
         });
     }
 
-    void listarProductos(Categoria c)
-    {
-        List<Producto> listaProd = productoRepository.buscarPorCategoria(c);
+    void listarProductosInicial(final Categoria c)
+    {//Setea la variable privada listaProd
+        ProductoRetrofit clienteRest =
+            RestClient.getInstance()
+                    .getRetrofit()
+                    .create(ProductoRetrofit.class);
+
+        Call<List<Producto> > listaProdCall = clienteRest.listarProductos();
+
+        listaProdCall.enqueue(new Callback<List<Producto>>(){
+        @Override
+        public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
+            if (response.code() == 200 || response.code() == 201) {
+                List<Producto> productos = response.body();
+                ListaProductosActivity.this.listaProd = productos;
+                listarProductos(c);
+            } else {
+                @SuppressLint("DefaultLocale")
+                String error = String.format("Error respuesta %d", response.code());
+                Log.d("ListaProductosActivity", error);
+            }
+        }
+
+        @Override
+        public void onFailure(Call<List<Producto>> call, Throwable t) {
+            Log.d("ListaProductosActivity", t.getMessage());
+        }
+
+    });
+    }
+
+    private void listarProductos(final Categoria c)
+    {//Reutiliza la variable listaProd
+        if(listaProd == null) return;
+        //List<Producto> listaProd = productoRepository.buscarPorCategoria(c);
+        List<Producto> listaMostrar = new ArrayList<>();
+
         Comparator<Producto> comp = new Comparator<Producto>()
         {
             @Override
@@ -114,9 +159,14 @@ public class ListaProductosActivity extends AppCompatActivity {
             }
         };
 
-        listaProd.sort(comp);
+        for(Producto p : listaProd)
+        {
+            if(p.getCategoria().getId().equals(c.getId())) listaMostrar.add(p);
+        }
 
-        adapterProducto = new ArrayAdapter<>(this,android.R.layout.simple_list_item_single_choice,listaProd);
+        listaMostrar.sort(comp);
+
+        adapterProducto = new ArrayAdapter<>(this,android.R.layout.simple_list_item_single_choice,listaMostrar);
         lvProductos.setAdapter(adapterProducto);
         lvProductos.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
     }
