@@ -1,11 +1,8 @@
 package ar.edu.utn.frsf.dam.isi.laboratorio02.dao;
 
-import android.os.Build;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Producto;

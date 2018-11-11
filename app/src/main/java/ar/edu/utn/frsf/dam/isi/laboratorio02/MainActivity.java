@@ -5,21 +5,13 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
 import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import com.google.firebase.iid.FirebaseInstanceId;
-
-import org.json.JSONException;
-
-import java.io.IOException;
-import java.util.List;
-
-import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
-import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.CategoriaRest;
 
 public class MainActivity extends AppCompatActivity {
 

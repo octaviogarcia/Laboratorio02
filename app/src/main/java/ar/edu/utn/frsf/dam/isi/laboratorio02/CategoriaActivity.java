@@ -2,10 +2,8 @@ package ar.edu.utn.frsf.dam.isi.laboratorio02;
 
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.support.v4.util.Pair;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,7 +12,6 @@ import android.widget.Toast;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.util.List;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.CategoriaRest;

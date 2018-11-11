@@ -1,7 +1,7 @@
 package ar.edu.utn.frsf.dam.isi.laboratorio02;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceFragmentCompat;
 
 public class ConfiguracionActivity extends AppCompatActivity {

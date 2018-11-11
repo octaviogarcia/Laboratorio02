@@ -2,34 +2,24 @@ package ar.edu.utn.frsf.dam.isi.laboratorio02;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Spinner;
 
-import org.json.JSONException;
-
-import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncCategoriaGET;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.ProductoRepository;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
-import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.CategoriaRest;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Producto;
-
-import java.util.Comparator;
-import java.util.concurrent.ExecutionException;
 
 public class ListaProductosActivity extends AppCompatActivity {
     private Spinner spinnerCatProd;

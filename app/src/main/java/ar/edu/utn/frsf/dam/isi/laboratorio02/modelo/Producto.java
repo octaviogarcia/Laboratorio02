@@ -1,7 +1,20 @@
 package ar.edu.utn.frsf.dam.isi.laboratorio02.modelo;
 
-import java.util.Objects;
+import android.util.Log;
 
+import com.google.gson.TypeAdapter;
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncCategoriaGET;
+
+@JsonAdapter(Producto.ProductoJsonAdapter.class)
 public class Producto {
 
     private Integer id;
@@ -90,5 +103,80 @@ public class Producto {
     public int hashCode() {
 
         return Objects.hash(id);
+    }
+
+    public class ProductoJsonAdapter extends TypeAdapter<Producto> {
+
+        @Override
+        public void write(JsonWriter out, Producto value) throws IOException {
+            out.beginObject();
+            out.name("id");
+            out.value(value.id);
+            out.name("nombre");
+            out.value(value.nombre);
+            out.name("descripcion");
+            out.value(value.descripcion);
+            out.name("precio");
+            out.value(value.precio);
+            out.name("categoriaId");
+            out.value(value.categoria.getId());
+            out.endObject();
+        }
+
+        @Override
+        public Producto read(JsonReader in) throws IOException {
+            AsyncCategoriaGET asyncCategoriaGET = new AsyncCategoriaGET();
+            asyncCategoriaGET.execute();
+            List<Categoria> categorias = null;
+
+            Producto p = new Producto(null,null,null,null,null);
+
+            in.beginObject();
+
+            try {
+                categorias = asyncCategoriaGET.get();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            while(in.hasNext() && (
+                    p.getId() == null ||
+                    p.getCategoria() == null ||
+                    p.getPrecio() == null ||
+                    p.getDescripcion() == null  ||
+                    p.getNombre() == null))
+            {
+                String field = in.nextName();
+                if(field.equals("nombre")) p.setNombre(in.nextString());
+                else if(field.equals("descripcion")) p.setDescripcion(in.nextString());
+                else if(field.equals("precio")) p.setPrecio(in.nextDouble());
+                else if(field.equals("id")) p.setId(in.nextInt());
+                else if(field.equals("categoriaId")) {
+                    Categoria categoria = null;
+                    Integer categoriaID = in.nextInt();
+                    for(Categoria c : categorias)
+                    {
+                        if(c.getId().equals(categoriaID))
+                        {
+                            categoria = c;
+                            break;
+                        }
+                    }
+                    p.setCategoria(categoria);
+                }
+                else in.skipValue();//No matchea ninguna propiedas, skipeo
+            }
+
+
+            in.endObject();
+
+            Log.d("ProductoJsonAdapter",String.format("Producto{%d,%s,%s,%f,%s",
+                    p.getId(),p.getNombre(),p.getDescripcion(),p.getPrecio(),p.getCategoria().toString()));
+
+            return p;
+        }
+
     }
 }

@@ -15,14 +15,14 @@ public interface ProductoRetrofit {
 
     @GET("productos/")
     public Call<List<Producto>> listarProductos();
-    @GET("productos/{id}")
+    @GET("productos/{id}/")
     public Call<Producto> buscarProductoPorId(@Path("id") int idProducto);
     @POST("productos/")
     public Call<Producto> crearProducto(@Body Producto p);
-    @PUT("productos/{id}")
+    @PUT("productos/{id}/")
     public Call<Producto> actualizarProducto(@Path("id") int idProducto,
                                       @Body       Producto p);
-    @DELETE("productos/{id}")
+    @DELETE("productos/{id}/")
     public Call<Producto> borrar(@Path("id") int idProducto);
 }
 
