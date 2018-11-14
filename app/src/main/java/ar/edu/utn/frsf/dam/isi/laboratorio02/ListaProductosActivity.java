@@ -58,8 +58,6 @@ public class ListaProductosActivity extends AppCompatActivity {
         lvProductos = findViewById(R.id.lvProductos);
         intent = getIntent();
 
-
-
         Boolean ventanaPrincipal = intent.getBooleanExtra("VentanaPrincipal",false);
         btnAgregar.setEnabled(!ventanaPrincipal);
         etCantidad.setEnabled(!ventanaPrincipal);

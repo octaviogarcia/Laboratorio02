@@ -1,13 +1,11 @@
 package ar.edu.utn.frsf.dam.isi.laboratorio02;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -20,21 +18,15 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncProductoGET;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.PedidoRepository;
-import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.ProductoRepository;
-import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.ProductoRetrofit;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Pedido;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoDetalle;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Producto;
-import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.RestClient;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class NuevoPedidoActivity extends AppCompatActivity {
     public static final String extraIdPedido  = "Id_pedido";
@@ -59,10 +51,12 @@ public class NuevoPedidoActivity extends AppCompatActivity {
 
     static final int segundos = 10;
 
+    AsyncProductoGET asyncProductoGET = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        cargarProductos();
+        asyncProductoGET = new AsyncProductoGET();
+        asyncProductoGET.start();
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.nuevo_pedido);
@@ -88,8 +82,6 @@ public class NuevoPedidoActivity extends AppCompatActivity {
 
         final Intent intentHistorial = new Intent(this, HistorialPedidoActivity.class);
         final Intent intentMain = new Intent(this,MainActivity.class);
-
-
 
         pedidoRepository = new PedidoRepository();
         pedido = new Pedido();
@@ -264,7 +256,6 @@ public class NuevoPedidoActivity extends AppCompatActivity {
             }
         });
 
-
         Intent intent = getIntent();
         Integer id = intent.getIntExtra(extraIdPedido,-1);
         if(id != -1){
@@ -306,38 +297,20 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         }
     }
 
-    private void cargarProductos() {
-        ProductoRetrofit clienteRest =
-                RestClient.getInstance()
-                        .getRetrofit()
-                        .create(ProductoRetrofit.class);
+    private Producto buscarProductoPorId(Integer id){
 
-        final Call<List<Producto> > listaProdCall = clienteRest.listarProductos();
-        //@TODO: Race condition? Como hago para esperar a que termine la llamada de retrofit?
-        listaProdCall.enqueue(new Callback<List<Producto>>(){
-            @Override
-            public void onResponse(Call<List<Producto>> call, Response<List<Producto>> response) {
-                if (response.code() == 200 || response.code() == 201) {
-                    List<Producto> productos = response.body();
-                    NuevoPedidoActivity.this.listaProductos = productos;
-                } else {
-                    @SuppressLint("DefaultLocale")
-                    String error = String.format("Error respuesta %d", response.code());
-                    Log.d("NuevoPedidoActivity", error);
-                }
+        if(listaProductos == null) {
+            try {
+                asyncProductoGET.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-
-            @Override
-            public void onFailure(Call<List<Producto>> call, Throwable t) {
-                Log.d("NuevoPedidoActivity", t.getMessage());
-            }
-        });
-    }
-
-    private Producto buscarProductoPorId(Integer id) {
+            listaProductos = asyncProductoGET.get();
+        }
         for(Producto p : listaProductos){
             if(p.getId().equals(id)) return p;
         }
+
         return null;
     }
 
