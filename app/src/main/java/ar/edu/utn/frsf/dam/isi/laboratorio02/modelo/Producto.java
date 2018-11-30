@@ -1,5 +1,9 @@
 package ar.edu.utn.frsf.dam.isi.laboratorio02.modelo;
 
+import android.arch.persistence.room.Embedded;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
 import android.util.Log;
 
 import com.google.gson.TypeAdapter;
@@ -14,15 +18,18 @@ import java.util.concurrent.ExecutionException;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncCategoriaGET;
 
+@Entity
 @JsonAdapter(Producto.ProductoJsonAdapter.class)
 public class Producto {
-
+    @PrimaryKey(autoGenerate = true)
     private Integer id;
     private String nombre;
     private String descripcion;
     private Double precio;
+    @Embedded(prefix = "cat_")
     private Categoria categoria;
 
+    @Ignore
     public Producto(String nombre, String descripcion, Double precio, Categoria categoria) {
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -30,18 +37,24 @@ public class Producto {
         this.categoria = categoria;
     }
 
+    @Ignore
     public Producto(String nombre, Double precio, Categoria categoria) {
         this.nombre = nombre;
         this.precio = precio;
         this.categoria = categoria;
     }
 
+    @Ignore
     public Producto(Integer id, String nombre, String descripcion, Double precio, Categoria categoria) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.precio = precio;
         this.categoria = categoria;
+    }
+
+    public Producto() {
+
     }
 
     public Integer getId() {

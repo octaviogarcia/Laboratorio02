@@ -4,8 +4,10 @@ import android.arch.persistence.room.Database;
 import android.arch.persistence.room.RoomDatabase;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Producto;
 
-@Database(entities = {Categoria.class},version = 1)
+@Database(entities = {Categoria.class,Producto.class},version = 2)
 public abstract class DatabaseProyecto extends RoomDatabase {
     public abstract CategoriaDao categoriaDao();
+    public abstract ProductoDao productoDao();
 }

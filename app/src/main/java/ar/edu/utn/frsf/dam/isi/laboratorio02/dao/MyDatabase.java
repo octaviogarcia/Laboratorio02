@@ -12,6 +12,7 @@ public class MyDatabase {
 
     private DatabaseProyecto db;
     private CategoriaDao categoriaDao;
+    private ProductoDao productoDao;
 
     private MyDatabase(Context ctx){
         db = Room.databaseBuilder(ctx,DatabaseProyecto.class,"database-proyecto")
@@ -19,6 +20,7 @@ public class MyDatabase {
                 .build();
 
         categoriaDao = db.categoriaDao();
+        productoDao = db.productoDao();
     }
 
     public void borrarTodo(){
@@ -28,6 +30,8 @@ public class MyDatabase {
     public CategoriaDao getCategoriaDao() {
         return categoriaDao;
     }
+    public ProductoDao  getProductoDao()  { return productoDao; }
+
 
 
 }
