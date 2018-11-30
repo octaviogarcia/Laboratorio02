@@ -14,6 +14,7 @@ import org.json.JSONException;
 import java.io.IOException;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.CategoriaRest;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.MyDatabase;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
 
 public class CategoriaActivity extends AppCompatActivity {
@@ -37,8 +38,23 @@ public class CategoriaActivity extends AppCompatActivity {
             }
             return 1;
         }
-        protected void onPostExecute(Integer integer)
-        {
+        protected void onPostExecute(Integer integer) {
+            Toast.makeText(CategoriaActivity.this,"Categoria creada",Toast.LENGTH_LONG).show();
+            textoCat.setText("");
+        }
+    }
+
+    private class AsyncCategoriaInsert extends AsyncTask<Categoria,Double,Integer>
+    {
+        @Override
+        protected Integer doInBackground(Categoria... categorias) {
+            Categoria categoria = categorias[0];
+            MyDatabase.getInstance(CategoriaActivity.this)
+                    .getCategoriaDao()
+                    .insert(categoria);
+            return 1;
+        }
+        protected void onPostExecute(Integer integer) {
             Toast.makeText(CategoriaActivity.this,"Categoria creada",Toast.LENGTH_LONG).show();
             textoCat.setText("");
         }
@@ -59,8 +75,16 @@ public class CategoriaActivity extends AppCompatActivity {
                 String categoriaNombre = textoCat.getText().toString();
                 if(categoriaNombre.isEmpty()) return;
                 categoria.setNombre(categoriaNombre);
-                AsyncCategoriaPOST asyncCategoriaPOST = new AsyncCategoriaPOST();
-                asyncCategoriaPOST.execute(categoria);
+
+                if(MainActivity.useDB) {
+                    AsyncCategoriaInsert asyncCategoriaInsert = new AsyncCategoriaInsert();
+                    asyncCategoriaInsert.execute(categoria);
+                }
+                else {
+                    AsyncCategoriaPOST asyncCategoriaPOST = new AsyncCategoriaPOST();
+                    asyncCategoriaPOST.execute(categoria);
+                }
+
                 return;
             }
         });
