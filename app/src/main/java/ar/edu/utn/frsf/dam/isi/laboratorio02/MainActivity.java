@@ -14,6 +14,8 @@ import android.widget.Button;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 public class MainActivity extends AppCompatActivity {
+    //Switcheo entre Retrofit/REST y ROOM
+    public static final boolean useDB = true;
 
     private Button btnNuevoPedido;
     private Button btnHistorial;
