@@ -1,4 +1,4 @@
-package ar.edu.utn.frsf.dam.isi.laboratorio02.modelo;
+package ar.edu.utn.frsf.dam.isi.laboratorio02.dao;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

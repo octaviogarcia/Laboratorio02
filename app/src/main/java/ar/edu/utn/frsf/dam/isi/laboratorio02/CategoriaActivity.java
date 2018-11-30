@@ -13,8 +13,8 @@ import org.json.JSONException;
 
 import java.io.IOException;
 
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.CategoriaRest;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
-import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.CategoriaRest;
 
 public class CategoriaActivity extends AppCompatActivity {
     private EditText textoCat;
@@ -69,8 +69,6 @@ public class CategoriaActivity extends AppCompatActivity {
         btnMenu.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //AsyncCategoriaGET asyncCategoriaGET = new AsyncCategoriaGET();
-                //asyncCategoriaGET.execute();
                 Intent i = new Intent(CategoriaActivity.this,
                         MainActivity.class);
                 startActivity(i);

@@ -51,12 +51,8 @@ public class NuevoPedidoActivity extends AppCompatActivity {
 
     static final int segundos = 10;
 
-    AsyncProductoGET asyncProductoGET = null;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        asyncProductoGET = new AsyncProductoGET();
-        asyncProductoGET.start();
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.nuevo_pedido);
@@ -68,6 +64,8 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         etCorreoElectronico.setText(defaultCorreo);
 
         btAgregarProducto = findViewById(R.id.btAgregarProducto);
+        //lo desahibilito y lo habilito cuando reciba los productos
+        btAgregarProducto.setEnabled(false);
         btQuitarProducto = findViewById(R.id.btQuitarProducto);
         lvPedido = findViewById(R.id.lvPedido);
 
@@ -257,7 +255,7 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         });
 
         Intent intent = getIntent();
-        Integer id = intent.getIntExtra(extraIdPedido,-1);
+        final Integer id = intent.getIntExtra(extraIdPedido,-1);
         if(id != -1){
             etCorreoElectronico.setEnabled(false);
             btAgregarProducto.setEnabled(false);
@@ -295,18 +293,24 @@ public class NuevoPedidoActivity extends AppCompatActivity {
             adapter.addAll(pedido.getDetalle());
             adapter.notifyDataSetChanged();
         }
+
+
+
+        AsyncProductoGET asyncProductoGET = new AsyncProductoGET(this,new AsyncProductoGET.IProductoGETCallback() {
+            @Override
+            public void callback(List<Producto> productos) {
+                if(productos != null){
+                    listaProductos = productos;
+                    if(id == -1) btAgregarProducto.setEnabled(true);
+                }
+            }
+        });
+        asyncProductoGET.start();
     }
 
     private Producto buscarProductoPorId(Integer id){
+        if(listaProductos == null) return null;
 
-        if(listaProductos == null) {
-            try {
-                asyncProductoGET.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            listaProductos = asyncProductoGET.get();
-        }
         for(Producto p : listaProductos){
             if(p.getId().equals(id)) return p;
         }

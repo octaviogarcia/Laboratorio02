@@ -14,13 +14,12 @@ import android.widget.Spinner;
 import android.widget.ToggleButton;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncCategoriaGET;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.ProductoRetrofit;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.RestClient;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Producto;
-import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.RestClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -45,8 +44,6 @@ public class GestionProductoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gestion_producto);
 
-        AsyncCategoriaGET asyncCategoriaGET = new AsyncCategoriaGET();
-        asyncCategoriaGET.execute();
 
         flagActualizacion = false;
         opcionNuevoBusqueda = (ToggleButton) findViewById(R.id.abmProductoAltaNuevo);
@@ -162,14 +159,15 @@ public class GestionProductoActivity extends AppCompatActivity {
             }
         });
 
-        try {
-            setearCategorias(asyncCategoriaGET.get());
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
+
+        AsyncCategoriaGET asyncCategoriaGET = new AsyncCategoriaGET(new AsyncCategoriaGET.ICategoriaGETCallback() {
+            @Override
+            public void callback(List<Categoria> categorias) {
+                setearCategorias(categorias);
+            }
+        });
+        asyncCategoriaGET.execute();
     }
 
     private void setearCategorias(final List<Categoria> listaCat) {

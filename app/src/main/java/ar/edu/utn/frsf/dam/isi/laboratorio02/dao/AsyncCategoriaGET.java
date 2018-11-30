@@ -8,11 +8,23 @@ import java.io.IOException;
 import java.util.List;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
-import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.CategoriaRest;
 
 public class AsyncCategoriaGET extends AsyncTask<Void,Double,List<Categoria>>
 {
     CategoriaRest categoriaRest = new CategoriaRest();
+
+    public interface ICategoriaGETCallback {
+        public void callback(List<Categoria> categorias);
+    }
+
+    private ICategoriaGETCallback categoriaGETCallback = null;
+
+    public AsyncCategoriaGET(ICategoriaGETCallback callback) {
+        this.categoriaGETCallback = callback;
+    }
+
+    public AsyncCategoriaGET() {}
+
     @Override
     protected List<Categoria> doInBackground(Void... voids) {
         try
@@ -25,5 +37,11 @@ public class AsyncCategoriaGET extends AsyncTask<Void,Double,List<Categoria>>
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    protected void onPostExecute(List<Categoria> categorias) {
+        if(categoriaGETCallback == null) return;
+        categoriaGETCallback.callback(categorias);
     }
 }

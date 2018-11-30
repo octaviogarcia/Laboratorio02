@@ -14,7 +14,6 @@ import android.widget.TextView;
 import java.util.List;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.PedidoRepository;
-import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.ProductoRepository;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Pedido;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoAdapter;
 
@@ -25,7 +24,6 @@ public class HistorialPedidoActivity extends AppCompatActivity {
     private TextView txtPedidos;
     private ListView lstHistorialPedidos;
     private PedidoRepository pedidoRepository;
-    private ProductoRepository productoRepository;
     private Adapter adapter;
 
     @Override
@@ -44,7 +42,6 @@ public class HistorialPedidoActivity extends AppCompatActivity {
 
         final List<Pedido> lstPedido = pedidoRepository.getLista();
 
-        //adapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,android.R.id.text1,lstPedido);
         adapter = new PedidoAdapter(this,lstPedido);
         lstHistorialPedidos.setAdapter((ListAdapter) adapter);
 
