@@ -5,21 +5,13 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
 import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import com.google.firebase.iid.FirebaseInstanceId;
-
-import org.json.JSONException;
-
-import java.io.IOException;
-import java.util.List;
-
-import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
-import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.CategoriaRest;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnPrepararPedidos;
     private Button btnConfiguracion;
     private Button btnCategorias;
+    private Button btnGestionProductos;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
         final Intent intentHistorial = new Intent(this, HistorialPedidoActivity.class);
         final Intent intentConfiguracion = new Intent(this, ConfiguracionActivity.class);
         final Intent intentCategorias = new Intent(this, CategoriaActivity.class);
+        final Intent intentGestionProductos = new Intent(this, GestionProductoActivity.class);
 
         btnNuevoPedido = (Button) findViewById(R.id.btnMainNuevoPedido);
         btnNuevoPedido.setOnClickListener(new View.OnClickListener() {
@@ -91,6 +85,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(intentCategorias);
+            }
+        });
+
+        btnGestionProductos = (Button) findViewById(R.id.btnGestionProductos);
+        btnGestionProductos.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(intentGestionProductos);
             }
         });
 

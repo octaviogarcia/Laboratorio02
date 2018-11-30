@@ -2,35 +2,27 @@ package ar.edu.utn.frsf.dam.isi.laboratorio02;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Spinner;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncCategoriaGET;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncProductoGET;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.ProductoRepository;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
-import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.CategoriaRest;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Producto;
 
-import java.util.Comparator;
-import java.util.concurrent.ExecutionException;
-
-public class ListaProductosActivity extends AppCompatActivity {
+public class ListaProductosActivity extends AppCompatActivity{
     private Spinner spinnerCatProd;
     private ProductoRepository productoRepository;
     private Button btnAgregar;
@@ -40,33 +32,12 @@ public class ListaProductosActivity extends AppCompatActivity {
     private ListView lvProductos;
     ArrayAdapter<Categoria> adapterCategoria = null;
     ArrayAdapter<Producto> adapterProducto = null;
-    final CategoriaRest categoriaRest = new CategoriaRest();
 
-    private class AsyncCategoriaGET extends AsyncTask<Void,Double,List<Categoria>>
-    {
-        @Override
-        protected List<Categoria> doInBackground(Void... voids) {
-            try
-            {
-                List<Categoria> list = categoriaRest.listarTodas();
-                return list;
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-    }
-
-
+    private List<Producto> listaProd = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        AsyncCategoriaGET asyncCategoriaGET = new AsyncCategoriaGET();
-        asyncCategoriaGET.execute();
 
         setContentView(R.layout.lista_productos);
 
@@ -76,8 +47,6 @@ public class ListaProductosActivity extends AppCompatActivity {
         etCantidad = findViewById(R.id.etCantidad);
         lvProductos = findViewById(R.id.lvProductos);
         intent = getIntent();
-
-
 
         Boolean ventanaPrincipal = intent.getBooleanExtra("VentanaPrincipal",false);
         btnAgregar.setEnabled(!ventanaPrincipal);
@@ -105,14 +74,14 @@ public class ListaProductosActivity extends AppCompatActivity {
             }
         });
 
-        try {
-            setearCategorias(asyncCategoriaGET.get());
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        AsyncCategoriaGET asyncCategoriaGET = new AsyncCategoriaGET(new AsyncCategoriaGET.ICategoriaGETCallback() {
+            @Override
+            public void callback(List<Categoria> categorias) {
+                setearCategorias(categorias);
+            }
+        });
 
+        asyncCategoriaGET.execute();
     }
     private void setearCategorias(final List<Categoria> listaCat) {
         if(listaCat == null) return;
@@ -120,6 +89,15 @@ public class ListaProductosActivity extends AppCompatActivity {
         adapterCategoria = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item,listaCat);
         adapterCategoria.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCatProd.setAdapter(adapterCategoria);
+
+        AsyncProductoGET asyncProductoGET = new AsyncProductoGET(this, new AsyncProductoGET.IProductoGETCallback() {
+            @Override
+            public void callback(List<Producto> productos) {
+                listaProd = productos;
+                listarProductos(listaCat.get(spinnerCatProd.getSelectedItemPosition()));
+            }
+        });
+
         spinnerCatProd.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
@@ -128,11 +106,16 @@ public class ListaProductosActivity extends AppCompatActivity {
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {}
         });
+
+        asyncProductoGET.start();
     }
 
-    void listarProductos(Categoria c)
-    {
-        List<Producto> listaProd = productoRepository.buscarPorCategoria(c);
+    private void listarProductos(final Categoria c)
+    {//Reutiliza la variable listaProd
+        if(listaProd == null) return;
+        //List<Producto> listaProd = productoRepository.buscarPorCategoria(c);
+        List<Producto> listaMostrar = new ArrayList<>();
+
         Comparator<Producto> comp = new Comparator<Producto>()
         {
             @Override
@@ -143,9 +126,14 @@ public class ListaProductosActivity extends AppCompatActivity {
             }
         };
 
-        listaProd.sort(comp);
+        for(Producto p : listaProd)
+        {
+            if(p.getCategoria().getId().equals(c.getId())) listaMostrar.add(p);
+        }
 
-        adapterProducto = new ArrayAdapter<>(this,android.R.layout.simple_list_item_single_choice,listaProd);
+        listaMostrar.sort(comp);
+
+        adapterProducto = new ArrayAdapter<>(this,android.R.layout.simple_list_item_single_choice,listaMostrar);
         lvProductos.setAdapter(adapterProducto);
         lvProductos.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
     }

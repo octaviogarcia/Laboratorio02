@@ -3,16 +3,11 @@ package ar.edu.utn.frsf.dam.isi.laboratorio02;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.os.AsyncTask;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.View;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -23,20 +18,15 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncProductoGET;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.PedidoRepository;
-import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.ProductoRepository;
-import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
-import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.CategoriaRest;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Pedido;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoDetalle;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Producto;
 
 public class NuevoPedidoActivity extends AppCompatActivity {
     public static final String extraIdPedido  = "Id_pedido";
@@ -50,7 +40,8 @@ public class NuevoPedidoActivity extends AppCompatActivity {
     RadioButton rbDomicilio;
     RadioGroup rbgModoDeEntrega;
     EditText etDireccion;
-    ProductoRepository productoRepository;
+//    ProductoRepository productoRepository;
+    List<Producto> listaProductos = null;
     PedidoRepository pedidoRepository;
     Pedido pedido;
     TextView tvTotalPedido;
@@ -60,11 +51,12 @@ public class NuevoPedidoActivity extends AppCompatActivity {
 
     static final int segundos = 10;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.nuevo_pedido);
+
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         etCorreoElectronico = findViewById(R.id.etCorreoElectronico);
@@ -72,6 +64,8 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         etCorreoElectronico.setText(defaultCorreo);
 
         btAgregarProducto = findViewById(R.id.btAgregarProducto);
+        //lo desahibilito y lo habilito cuando reciba los productos
+        btAgregarProducto.setEnabled(false);
         btQuitarProducto = findViewById(R.id.btQuitarProducto);
         lvPedido = findViewById(R.id.lvPedido);
 
@@ -87,7 +81,6 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         final Intent intentHistorial = new Intent(this, HistorialPedidoActivity.class);
         final Intent intentMain = new Intent(this,MainActivity.class);
 
-        productoRepository = new ProductoRepository();
         pedidoRepository = new PedidoRepository();
         pedido = new Pedido();
 
@@ -261,9 +254,8 @@ public class NuevoPedidoActivity extends AppCompatActivity {
             }
         });
 
-
         Intent intent = getIntent();
-        Integer id = intent.getIntExtra(extraIdPedido,-1);
+        final Integer id = intent.getIntExtra(extraIdPedido,-1);
         if(id != -1){
             etCorreoElectronico.setEnabled(false);
             btAgregarProducto.setEnabled(false);
@@ -301,7 +293,31 @@ public class NuevoPedidoActivity extends AppCompatActivity {
             adapter.addAll(pedido.getDetalle());
             adapter.notifyDataSetChanged();
         }
+
+
+
+        AsyncProductoGET asyncProductoGET = new AsyncProductoGET(this,new AsyncProductoGET.IProductoGETCallback() {
+            @Override
+            public void callback(List<Producto> productos) {
+                if(productos != null){
+                    listaProductos = productos;
+                    if(id == -1) btAgregarProducto.setEnabled(true);
+                }
+            }
+        });
+        asyncProductoGET.start();
     }
+
+    private Producto buscarProductoPorId(Integer id){
+        if(listaProductos == null) return null;
+
+        for(Producto p : listaProductos){
+            if(p.getId().equals(id)) return p;
+        }
+
+        return null;
+    }
+
     @Override
     protected void onActivityResult(int request,int result, Intent data)
     {//Manejo el retorno de listar pedidos
@@ -322,7 +338,8 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                         return;
                     }
                 }
-                PedidoDetalle pd = new PedidoDetalle(cantidad,productoRepository.buscarPorId(id));
+                //PedidoDetalle pd = new PedidoDetalle(cantidad,productoRepository.buscarPorId(id));
+                PedidoDetalle pd = new PedidoDetalle(cantidad,buscarProductoPorId(id));
                 pedido.agregarDetalle(pd);
                 costoActual+= pd.getProducto().getPrecio()*cantidad;
                 tvTotalPedido.setText(String.format("Total del pedido: $%f",costoActual));

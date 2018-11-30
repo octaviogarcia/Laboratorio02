@@ -1,4 +1,4 @@
-package ar.edu.utn.frsf.dam.isi.laboratorio02.modelo;
+package ar.edu.utn.frsf.dam.isi.laboratorio02.dao;
 
 import android.util.Log;
 
@@ -16,6 +16,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
 
 public class CategoriaRest {
     public static final String ip = "10.0.2.2";
