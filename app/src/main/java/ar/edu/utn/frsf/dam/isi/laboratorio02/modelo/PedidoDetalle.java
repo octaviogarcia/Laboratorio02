@@ -1,18 +1,42 @@
 package ar.edu.utn.frsf.dam.isi.laboratorio02.modelo;
 
+import android.arch.persistence.room.Embedded;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
+
+@Entity
 public class PedidoDetalle {
 
     private static int ID_DETALLE =1;
+    @PrimaryKey(autoGenerate = true)
     private Integer id;
     private Integer cantidad;
+
+    public Integer getIdPedidoAsignado() {
+        return idPedidoAsignado;
+    }
+
+    public void setIdPedidoAsignado(Integer idPedidoAsignado) {
+        this.idPedidoAsignado = idPedidoAsignado;
+    }
+
+    private Integer idPedidoAsignado;
+
+    @Embedded(prefix = "prod_")
     private Producto producto;
+
+    @Embedded(prefix = "ped_")
     private Pedido pedido;
 
+    @Ignore
     public PedidoDetalle(Integer cantidad, Producto producto) {
-        id=ID_DETALLE++;
+        id =ID_DETALLE++;
         this.cantidad = cantidad;
         this.producto = producto;
     }
+
+    public PedidoDetalle(){}
 
     public Integer getId() {
         return id;
@@ -45,6 +69,7 @@ public class PedidoDetalle {
     public void setPedido(Pedido pedido) {
         this.pedido = pedido;
         pedido.agregarDetalle(this);
+        this.idPedidoAsignado = pedido.getId();
     }
     @Override
     public String toString() {
