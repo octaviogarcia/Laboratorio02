@@ -74,9 +74,10 @@ public class PedidoDetalle {
 
     public void setPedido(Pedido pedido) {
         this.pedido = pedido;
-        pedido.agregarDetalle(this);
-        this.idPedidoAsignado = Long.valueOf(pedido.getId());
+//        pedido.agregarDetalle(this);
+//        this.idPedidoAsignado = Long.valueOf(pedido.getId());
     }
+
 
 
     @Override

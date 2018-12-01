@@ -13,9 +13,13 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.MyDatabase;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.PedidoDao;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.PedidoRepository;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Pedido;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoAdapter;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoConDetalles;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoDetalle;
 
 
 public class HistorialPedidoActivity extends AppCompatActivity {
@@ -40,10 +44,38 @@ public class HistorialPedidoActivity extends AppCompatActivity {
 
         pedidoRepository = new PedidoRepository();
 
-        final List<Pedido> lstPedido = pedidoRepository.getLista();
 
-        adapter = new PedidoAdapter(this,lstPedido);
-        lstHistorialPedidos.setAdapter((ListAdapter) adapter);
+        if(MainActivity.useDB){
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    MyDatabase db = MyDatabase.getInstance(HistorialPedidoActivity.this);
+                    PedidoDao pdao = db.getPedidoDao();
+                    final List<Pedido> pedidos = pdao.getAll();
+                    for(Pedido p : pedidos){
+                        List<PedidoConDetalles> pcd = pdao.buscarPorIdConDetalles(p.getId());
+                        List<PedidoDetalle> pedidoDetalles = pcd.get(0).detalle;
+                        p.setDetalle(pedidoDetalles);
+                        for(PedidoDetalle pd : pedidoDetalles){
+                            pd.setPedido(p);
+                        }
+                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            adapter = new PedidoAdapter(HistorialPedidoActivity.this,pedidos);
+                            lstHistorialPedidos.setAdapter((ListAdapter) adapter);
+                        }
+                    });
+                }
+            }).start();
+
+        }
+        else {
+            final List<Pedido> lstPedido = pedidoRepository.getLista();
+            adapter = new PedidoAdapter(this,lstPedido);
+            lstHistorialPedidos.setAdapter((ListAdapter) adapter);
+        }
 
         btnHistorialNuevo.setOnClickListener(new Button.OnClickListener(){
             @Override

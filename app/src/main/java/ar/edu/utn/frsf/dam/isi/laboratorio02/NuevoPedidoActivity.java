@@ -237,7 +237,7 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                             final long id = db.getPedidoDao().insert(pedido);
                             for(PedidoDetalle pd : pedido.getDetalle()){
                                 pd.setIdPedidoAsignado(id);
-                                db.getPedidoDetalleDao().update(pd);
+                                db.getPedidoDetalleDao().insert(pd);
                             }
                             runOnUiThread(new Runnable() {
                                 @Override

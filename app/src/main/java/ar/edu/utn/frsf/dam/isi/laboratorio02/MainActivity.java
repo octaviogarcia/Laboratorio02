@@ -108,7 +108,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("ROOMLOG PRODUCTO",db.getProductoDao().getAll().toString());
                 Log.d("ROOMLOG CATEGORIA",db.getCategoriaDao().getAll().toString());
                 Log.d("ROOMLOG PEDIDO",db.getPedidoDao().getAllConDetalles().toString());
-                Log.d("ROOMLOG PEDIDODETALLE",db.getPedidoDetalleDao().getAll().toString());
             }
         }).start();
     }
