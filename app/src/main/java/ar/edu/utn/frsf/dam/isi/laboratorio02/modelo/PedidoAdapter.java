@@ -13,8 +13,11 @@ import android.widget.Button;
 
 import java.util.List;
 
+import ar.edu.utn.frsf.dam.isi.laboratorio02.MainActivity;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.NuevoPedidoActivity;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.R;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.MyDatabase;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.PedidoDao;
 
 public class PedidoAdapter extends ArrayAdapter<Pedido> {
     private Context ctx;
@@ -41,7 +44,7 @@ public class PedidoAdapter extends ArrayAdapter<Pedido> {
         }
 
 
-        Pedido pedido = (Pedido) super.getItem(position);
+        final Pedido pedido = (Pedido) super.getItem(position);
         pediHolder.tvMailPedido.setText("Contacto: "+pedido.getMailContacto());
         pediHolder.tvHoraEntrega.setText("Fecha de Entrega: "+pedido.getFecha().toString());
         pediHolder.tvCantidadItems.setText("Items: "+new Integer(pedido.getDetalle().size()).toString());
@@ -82,12 +85,21 @@ public class PedidoAdapter extends ArrayAdapter<Pedido> {
             new Button.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Pedido p = (Pedido) view.getTag();
+                    final Pedido p = (Pedido) view.getTag();
                     if(     p.getEstado().equals(Pedido.Estado.REALIZADO)||
                             p.getEstado().equals(Pedido.Estado.ACEPTADO) ||
                             p.getEstado().equals(Pedido.Estado.EN_PREPARACION))
                     {
                         p.setEstado(Pedido.Estado.CANCELADO);
+                        if(MainActivity.useDB){
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    PedidoDao pedidoDao = MyDatabase.getInstance(PedidoAdapter.this.ctx).getPedidoDao();
+                                    pedidoDao.update(p);
+                                }
+                            }).start();
+                        }
                         PedidoAdapter.this.notifyDataSetChanged();
                         return;
                     }

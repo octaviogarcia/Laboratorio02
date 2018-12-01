@@ -1,18 +1,49 @@
 package ar.edu.utn.frsf.dam.isi.laboratorio02.modelo;
 
+import android.arch.persistence.room.Embedded;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.ForeignKey;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
+
+import ar.edu.utn.frsf.dam.isi.laboratorio02.MainActivity;
+
+import static android.arch.persistence.room.ForeignKey.CASCADE;
+
+@Entity(foreignKeys =
+@ForeignKey(entity = Pedido.class,
+        parentColumns = "id",
+        childColumns = "idPedidoAsignado",
+        onDelete = CASCADE))
 public class PedidoDetalle {
 
-    private static int ID_DETALLE =1;
+    @PrimaryKey(autoGenerate = true)
     private Integer id;
     private Integer cantidad;
+
+    public Long getIdPedidoAsignado() {
+        return idPedidoAsignado;
+    }
+
+    public void setIdPedidoAsignado(Long idPedidoAsignado) {
+        this.idPedidoAsignado = idPedidoAsignado;
+    }
+
+    private Long idPedidoAsignado;
+
+    @Embedded(prefix = "prod_")
     private Producto producto;
+
+    @Embedded(prefix = "ped_")
     private Pedido pedido;
 
+    @Ignore
     public PedidoDetalle(Integer cantidad, Producto producto) {
-        id=ID_DETALLE++;
         this.cantidad = cantidad;
         this.producto = producto;
     }
+
+    public PedidoDetalle(){}
 
     public Integer getId() {
         return id;
@@ -44,10 +75,24 @@ public class PedidoDetalle {
 
     public void setPedido(Pedido pedido) {
         this.pedido = pedido;
-        pedido.agregarDetalle(this);
+//        pedido.agregarDetalle(this);
+//        this.idPedidoAsignado = Long.valueOf(pedido.getId());
     }
+
+
+
+    public String toString2() {
+        return "PedidoDetalle{" +
+                "id=" + id +
+                ", cantidad=" + cantidad +
+                ", idPedidoAsignado=" + idPedidoAsignado +
+                ", producto=" + producto +
+                ", pedido=" + pedido +
+                '}';
+    }
+
     @Override
-    public String toString() {
-        return producto.getNombre() + "( $"+producto.getPrecio()+")"+ cantidad;
+    public String toString(){
+        return producto.toString() + "x" + cantidad.toString();
     }
 }

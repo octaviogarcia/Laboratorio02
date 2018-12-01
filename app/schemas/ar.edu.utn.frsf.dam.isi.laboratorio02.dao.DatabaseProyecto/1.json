@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "1bc66cc2a80e192dc235ebf6555a4d2d",
+    "identityHash": "999c14b30d9e7959d5b998210f8f235e",
     "entities": [
       {
         "tableName": "Categoria",
@@ -29,11 +29,61 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "Producto",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `nombre` TEXT, `descripcion` TEXT, `precio` REAL, `cat_id` INTEGER, `cat_nombre` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nombre",
+            "columnName": "nombre",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "descripcion",
+            "columnName": "descripcion",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "precio",
+            "columnName": "precio",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "categoria.id",
+            "columnName": "cat_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "categoria.nombre",
+            "columnName": "cat_nombre",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"1bc66cc2a80e192dc235ebf6555a4d2d\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"999c14b30d9e7959d5b998210f8f235e\")"
     ]
   }
 }

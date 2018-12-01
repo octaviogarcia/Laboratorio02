@@ -3,6 +3,7 @@ package ar.edu.utn.frsf.dam.isi.laboratorio02;
 import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,6 +13,15 @@ import android.view.View;
 import android.widget.Button;
 
 import com.google.firebase.iid.FirebaseInstanceId;
+
+import java.util.List;
+
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.MyDatabase;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.PedidoDao;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Pedido;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoConDetalles;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoDetalle;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Producto;
 
 public class MainActivity extends AppCompatActivity {
     //Switcheo entre Retrofit/REST y ROOM
@@ -98,6 +108,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                MyDatabase db = MyDatabase.getInstance(MainActivity.this);
+                Log.d("ROOMLOG PRODUCTO",db.getProductoDao().getAll().toString());
+                Log.d("ROOMLOG CATEGORIA",db.getCategoriaDao().getAll().toString());
+                Log.d("ROOMLOG PEDIDO",db.getPedidoDao().getAllConDetalles().toString());
+            }
+        }).start();
     }
         @Override
     protected void onActivityResult(int request,int result, Intent data)
@@ -127,5 +146,18 @@ public class MainActivity extends AppCompatActivity {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
+    }
+
+    public static Pedido getPedidoById(Context context, Integer id){
+        PedidoDao pedidoDao =MyDatabase.getInstance(context)
+                .getPedidoDao();
+
+        List<PedidoConDetalles> temp = pedidoDao.buscarPorIdConDetalles(id);
+        if(temp.isEmpty()) return null;
+        Pedido pedido = temp.get(0).pedido;
+        List<PedidoDetalle> pedidoDetalles = temp.get(0).detalle;
+        pedido.setDetalle(pedidoDetalles);
+        for(PedidoDetalle pd : pedidoDetalles) pd.setPedido(pedido);
+        return pedido;
     }
 }

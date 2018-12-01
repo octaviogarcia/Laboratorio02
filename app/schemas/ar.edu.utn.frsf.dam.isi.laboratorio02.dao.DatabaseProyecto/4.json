@@ -1,0 +1,255 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "6edb507f4342cca5e9d60b836cc73680",
+    "entities": [
+      {
+        "tableName": "Categoria",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `nombre` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nombre",
+            "columnName": "nombre",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "Producto",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `nombre` TEXT, `descripcion` TEXT, `precio` REAL, `cat_id` INTEGER, `cat_nombre` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nombre",
+            "columnName": "nombre",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "descripcion",
+            "columnName": "descripcion",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "precio",
+            "columnName": "precio",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "categoria.id",
+            "columnName": "cat_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "categoria.nombre",
+            "columnName": "cat_nombre",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "Pedido",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `fecha` INTEGER, `estado` TEXT, `direccionEnvio` TEXT, `mailContacto` TEXT, `retirar` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fecha",
+            "columnName": "fecha",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "estado",
+            "columnName": "estado",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "direccionEnvio",
+            "columnName": "direccionEnvio",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "mailContacto",
+            "columnName": "mailContacto",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "retirar",
+            "columnName": "retirar",
+            "affinity": "INTEGER",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "PedidoDetalle",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `cantidad` INTEGER, `idPedidoAsignado` INTEGER, `prod_id` INTEGER, `prod_nombre` TEXT, `prod_descripcion` TEXT, `prod_precio` REAL, `prod_cat_id` INTEGER, `prod_cat_nombre` TEXT, `ped_id` INTEGER, `ped_fecha` INTEGER, `ped_estado` TEXT, `ped_direccionEnvio` TEXT, `ped_mailContacto` TEXT, `ped_retirar` INTEGER, FOREIGN KEY(`idPedidoAsignado`) REFERENCES `Pedido`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "cantidad",
+            "columnName": "cantidad",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "idPedidoAsignado",
+            "columnName": "idPedidoAsignado",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "producto.id",
+            "columnName": "prod_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "producto.nombre",
+            "columnName": "prod_nombre",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "producto.descripcion",
+            "columnName": "prod_descripcion",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "producto.precio",
+            "columnName": "prod_precio",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "producto.categoria.id",
+            "columnName": "prod_cat_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "producto.categoria.nombre",
+            "columnName": "prod_cat_nombre",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pedido.id",
+            "columnName": "ped_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pedido.fecha",
+            "columnName": "ped_fecha",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pedido.estado",
+            "columnName": "ped_estado",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pedido.direccionEnvio",
+            "columnName": "ped_direccionEnvio",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pedido.mailContacto",
+            "columnName": "ped_mailContacto",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pedido.retirar",
+            "columnName": "ped_retirar",
+            "affinity": "INTEGER",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [],
+        "foreignKeys": [
+          {
+            "table": "Pedido",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "idPedidoAsignado"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"6edb507f4342cca5e9d60b836cc73680\")"
+    ]
+  }
+}

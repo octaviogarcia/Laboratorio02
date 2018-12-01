@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -23,8 +24,11 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncProductoGET;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncProductoSelect;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.MyDatabase;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.PedidoRepository;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Pedido;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoConDetalles;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoDetalle;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Producto;
 
@@ -40,7 +44,6 @@ public class NuevoPedidoActivity extends AppCompatActivity {
     RadioButton rbDomicilio;
     RadioGroup rbgModoDeEntrega;
     EditText etDireccion;
-//    ProductoRepository productoRepository;
     List<Producto> listaProductos = null;
     PedidoRepository pedidoRepository;
     Pedido pedido;
@@ -129,14 +132,22 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                         }
                         Intent broadcastIntent = new Intent(NuevoPedidoActivity.this,EstadoPedidoReceiver.class);
                         broadcastIntent.setAction(EstadoPedidoReceiver.ESTADO_ACEPTADO);
-
+                        MyDatabase db = MyDatabase.getInstance(NuevoPedidoActivity.this);
                         // buscar pedidos no aceptados y aceptarlos utomáticamente
-                        List<Pedido> lista = pedidoRepository.getLista();
+                        List<Pedido> lista = null;
+                        if(MainActivity.useDB){
+                            lista = db.getPedidoDao().getAll();
+                        }
+                        else lista = pedidoRepository.getLista();
+
                         for(Pedido p: lista){
                             if(p.getEstado().equals(Pedido.Estado.REALIZADO))
                             {
                                 broadcastIntent.putExtra("idPedido",p.getId());
                                 p.setEstado(Pedido.Estado.ACEPTADO);
+
+                                if(MainActivity.useDB) db.getPedidoDao().update(p);
+
                                 sendBroadcast(broadcastIntent);
                             }
                         }
@@ -222,14 +233,38 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                     throw new RuntimeException("UNREACHABLE");
                 }
 
+
                 pedido.setEstado(Pedido.Estado.REALIZADO);
-                pedidoRepository.guardarPedido(pedido);
 
-                pedido = new Pedido();//Reinicio.
-                adapter = new ArrayAdapter<>(NuevoPedidoActivity.this,android.R.layout.simple_list_item_1,android.R.id.text1,pedido.getDetalle());
-                lvPedido.setAdapter(adapter);
-
-                startActivity(intentHistorial);
+                if(MainActivity.useDB){
+                    final MyDatabase db = MyDatabase.getInstance(NuevoPedidoActivity.this);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final long id = db.getPedidoDao().insert(pedido);
+                            for(PedidoDetalle pd : pedido.getDetalle()){
+                                pd.setIdPedidoAsignado(id);
+                                db.getPedidoDetalleDao().insert(pd);
+                            }
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    pedido = new Pedido();//Reinicio.
+                                    adapter = new ArrayAdapter<>(NuevoPedidoActivity.this,android.R.layout.simple_list_item_1,android.R.id.text1,pedido.getDetalle());
+                                    lvPedido.setAdapter(adapter);
+                                    startActivity(intentHistorial);
+                                }
+                            });
+                        }
+                    }).start();
+                }
+                else{
+                    pedidoRepository.guardarPedido(pedido);
+                    pedido = new Pedido();//Reinicio.
+                    adapter = new ArrayAdapter<>(NuevoPedidoActivity.this,android.R.layout.simple_list_item_1,android.R.id.text1,pedido.getDetalle());
+                    lvPedido.setAdapter(adapter);
+                    startActivity(intentHistorial);
+                }
             }
         });
 
@@ -254,8 +289,35 @@ public class NuevoPedidoActivity extends AppCompatActivity {
             }
         });
 
+
         Intent intent = getIntent();
         final Integer id = intent.getIntExtra(extraIdPedido,-1);
+
+        if(MainActivity.useDB){
+            AsyncProductoSelect asyncProductoSelect = new AsyncProductoSelect(this, new AsyncProductoSelect.IProductoSelectCallback() {
+                @Override
+                public void callback(List<Producto> productos) {
+                    if(productos!=null){
+                        listaProductos = productos;
+                        if(id == -1) btAgregarProducto.setEnabled(true);
+                    }
+                }
+            });
+            asyncProductoSelect.execute();
+        }
+        else {
+            AsyncProductoGET asyncProductoGET = new AsyncProductoGET(this, new AsyncProductoGET.IProductoGETCallback() {
+                @Override
+                public void callback(List<Producto> productos) {
+                    if (productos != null) {
+                        listaProductos = productos;
+                        if (id == -1) btAgregarProducto.setEnabled(true);
+                    }
+                }
+            });
+            asyncProductoGET.start();
+        }
+
         if(id != -1){
             etCorreoElectronico.setEnabled(false);
             btAgregarProducto.setEnabled(false);
@@ -277,35 +339,41 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                 }
             });
 
-            Pedido pedido = pedidoRepository.buscarPorId(id);
-
-            etCorreoElectronico.setText(pedido.getMailContacto());
-            etHoraSeleccionada.setText(pedido.getFecha().toString());
-            if(pedido.getRetirar()){
-                rbLocal.setChecked(true);
+            if(MainActivity.useDB){
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final Pedido pedido = MainActivity.getPedidoById(NuevoPedidoActivity.this,id);
+                        Log.d("VIENDODETALLE",pedido.toString());
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                terminarOnCreate(pedido);
+                            }
+                        });
+                    }
+                }).start();
             }
-            else{
-                rbDomicilio.setChecked(true);
-                etDireccion.setText(pedido.getDireccionEnvio());
-                etDireccion.setEnabled(false);
+            else {
+                terminarOnCreate(pedidoRepository.buscarPorId(id));
             }
+        }
+    }
 
-            adapter.addAll(pedido.getDetalle());
-            adapter.notifyDataSetChanged();
+    void terminarOnCreate(Pedido pedido){
+        etCorreoElectronico.setText(pedido.getMailContacto());
+        etHoraSeleccionada.setText(pedido.getFecha().toString());
+        if(pedido.getRetirar()){
+            rbLocal.setChecked(true);
+        }
+        else{
+            rbDomicilio.setChecked(true);
+            etDireccion.setText(pedido.getDireccionEnvio());
+            etDireccion.setEnabled(false);
         }
 
-
-
-        AsyncProductoGET asyncProductoGET = new AsyncProductoGET(this,new AsyncProductoGET.IProductoGETCallback() {
-            @Override
-            public void callback(List<Producto> productos) {
-                if(productos != null){
-                    listaProductos = productos;
-                    if(id == -1) btAgregarProducto.setEnabled(true);
-                }
-            }
-        });
-        asyncProductoGET.start();
+        adapter.addAll(pedido.getDetalle());
+        adapter.notifyDataSetChanged();
     }
 
     private Producto buscarProductoPorId(Integer id){

@@ -17,7 +17,9 @@ import java.util.Comparator;
 import java.util.List;
 
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncCategoriaGET;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncCategoriaSelect;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncProductoGET;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncProductoSelect;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.ProductoRepository;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Categoria;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Producto;
@@ -74,14 +76,26 @@ public class ListaProductosActivity extends AppCompatActivity{
             }
         });
 
-        AsyncCategoriaGET asyncCategoriaGET = new AsyncCategoriaGET(new AsyncCategoriaGET.ICategoriaGETCallback() {
-            @Override
-            public void callback(List<Categoria> categorias) {
-                setearCategorias(categorias);
-            }
-        });
+        if(MainActivity.useDB){
+            AsyncCategoriaSelect asyncCategoriaSelect = new AsyncCategoriaSelect(this, new AsyncCategoriaSelect.ICategoriaSelectCallback() {
+                @Override
+                public void callback(List<Categoria> categorias) {
+                    setearCategorias(categorias);
+                }
+            });
+            asyncCategoriaSelect.execute();
+        }
+        else {
+            AsyncCategoriaGET asyncCategoriaGET = new AsyncCategoriaGET(new AsyncCategoriaGET.ICategoriaGETCallback() {
+                @Override
+                public void callback(List<Categoria> categorias) {
+                    setearCategorias(categorias);
+                }
+            });
 
-        asyncCategoriaGET.execute();
+            asyncCategoriaGET.execute();
+        }
+
     }
     private void setearCategorias(final List<Categoria> listaCat) {
         if(listaCat == null) return;
@@ -89,14 +103,6 @@ public class ListaProductosActivity extends AppCompatActivity{
         adapterCategoria = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item,listaCat);
         adapterCategoria.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCatProd.setAdapter(adapterCategoria);
-
-        AsyncProductoGET asyncProductoGET = new AsyncProductoGET(this, new AsyncProductoGET.IProductoGETCallback() {
-            @Override
-            public void callback(List<Producto> productos) {
-                listaProd = productos;
-                listarProductos(listaCat.get(spinnerCatProd.getSelectedItemPosition()));
-            }
-        });
 
         spinnerCatProd.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){
             @Override
@@ -107,12 +113,37 @@ public class ListaProductosActivity extends AppCompatActivity{
             public void onNothingSelected(AdapterView<?> adapterView) {}
         });
 
-        asyncProductoGET.start();
+
+        if(MainActivity.useDB){
+            AsyncProductoSelect asyncProductoSelect = new AsyncProductoSelect(this, new AsyncProductoSelect.IProductoSelectCallback() {
+                @Override
+                public void callback(List<Producto> productos) {
+                    listaProd = productos;
+                    if(listaCat.size() == 0 || spinnerCatProd.getSelectedItemPosition() == -1)
+                        return;
+                    listarProductos(listaCat.get(spinnerCatProd.getSelectedItemPosition()));
+                }
+            });
+            asyncProductoSelect.execute();
+        }
+        else {
+            AsyncProductoGET asyncProductoGET = new AsyncProductoGET(this, new AsyncProductoGET.IProductoGETCallback() {
+                @Override
+                public void callback(List<Producto> productos) {
+                    listaProd = productos;
+                    if(listaCat.size() == 0 || spinnerCatProd.getSelectedItemPosition() == -1)
+                        return;
+                    listarProductos(listaCat.get(spinnerCatProd.getSelectedItemPosition()));
+                }
+            });
+            asyncProductoGET.start();
+        }
     }
 
     private void listarProductos(final Categoria c)
     {//Reutiliza la variable listaProd
         if(listaProd == null) return;
+        if(listaProd.size() == 0) return;
         //List<Producto> listaProd = productoRepository.buscarPorCategoria(c);
         List<Producto> listaMostrar = new ArrayList<>();
 
