@@ -119,23 +119,24 @@ public class Pedido {
         if(this.detalle != null) this.detalle.remove(det);
     }
 
-    @Override
-    public String toString() {
-        return "Pedido{" +
-                "id=" + id +
-                ", fecha=" + fecha +
-                ", estado=" + estado +
-                ", direccionEnvio='" + direccionEnvio + '\'' +
-                ", mailContacto='" + mailContacto + '\'' +
-                ", retirar=" + retirar +
-                '}';
-    }
-
     public Double total(){
         Double total = 0.0;
         for(PedidoDetalle det: detalle){
             total+=det.getProducto().getPrecio()*det.getCantidad();
         }
         return total;
+    }
+
+    @Override
+    public String toString() {
+        return "Pedido{" +
+                "id=" + id +
+                ", fecha=" + fecha +
+                ", detalle=" + detalle +
+                ", estado=" + estado +
+                ", direccionEnvio='" + direccionEnvio + '\'' +
+                ", mailContacto='" + mailContacto + '\'' +
+                ", retirar=" + retirar +
+                '}';
     }
 }

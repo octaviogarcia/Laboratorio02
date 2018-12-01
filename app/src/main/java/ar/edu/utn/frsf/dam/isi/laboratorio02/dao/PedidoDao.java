@@ -29,4 +29,7 @@ public interface PedidoDao {
     @Transaction
     @Query("SELECT * from Pedido WHERE id = :id")
     List<PedidoConDetalles> buscarPorIdConDetalles(Integer id);
+
+    @Query("SELECT * from Pedido")
+    List<PedidoConDetalles> getAllConDetalles();
 }

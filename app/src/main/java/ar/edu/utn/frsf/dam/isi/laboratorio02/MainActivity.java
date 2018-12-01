@@ -13,6 +13,9 @@ import android.widget.Button;
 
 import com.google.firebase.iid.FirebaseInstanceId;
 
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.MyDatabase;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Producto;
+
 public class MainActivity extends AppCompatActivity {
     //Switcheo entre Retrofit/REST y ROOM
     public static final boolean useDB = true;
@@ -98,6 +101,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                MyDatabase db = MyDatabase.getInstance(MainActivity.this);
+                Log.d("ROOMLOG PRODUCTO",db.getProductoDao().getAll().toString());
+                Log.d("ROOMLOG CATEGORIA",db.getCategoriaDao().getAll().toString());
+                Log.d("ROOMLOG PEDIDO",db.getPedidoDao().getAllConDetalles().toString());
+                Log.d("ROOMLOG PEDIDODETALLE",db.getPedidoDetalleDao().getAll().toString());
+            }
+        }).start();
     }
         @Override
     protected void onActivityResult(int request,int result, Intent data)

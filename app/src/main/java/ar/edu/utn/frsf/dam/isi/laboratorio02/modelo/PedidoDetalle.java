@@ -2,10 +2,16 @@ package ar.edu.utn.frsf.dam.isi.laboratorio02.modelo;
 
 import android.arch.persistence.room.Embedded;
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
+import static android.arch.persistence.room.ForeignKey.CASCADE;
 
-@Entity
+@Entity(foreignKeys =
+@ForeignKey(entity = Pedido.class,
+        parentColumns = "id",
+        childColumns = "idPedidoAsignado",
+        onDelete = CASCADE))
 public class PedidoDetalle {
 
     private static int ID_DETALLE =1;
@@ -13,15 +19,15 @@ public class PedidoDetalle {
     private Integer id;
     private Integer cantidad;
 
-    public Integer getIdPedidoAsignado() {
+    public Long getIdPedidoAsignado() {
         return idPedidoAsignado;
     }
 
-    public void setIdPedidoAsignado(Integer idPedidoAsignado) {
+    public void setIdPedidoAsignado(Long idPedidoAsignado) {
         this.idPedidoAsignado = idPedidoAsignado;
     }
 
-    private Integer idPedidoAsignado;
+    private Long idPedidoAsignado;
 
     @Embedded(prefix = "prod_")
     private Producto producto;
@@ -69,10 +75,18 @@ public class PedidoDetalle {
     public void setPedido(Pedido pedido) {
         this.pedido = pedido;
         pedido.agregarDetalle(this);
-        this.idPedidoAsignado = pedido.getId();
+        this.idPedidoAsignado = Long.valueOf(pedido.getId());
     }
+
+
     @Override
     public String toString() {
-        return producto.getNombre() + "( $"+producto.getPrecio()+")"+ cantidad;
+        return "PedidoDetalle{" +
+                "id=" + id +
+                ", cantidad=" + cantidad +
+                ", idPedidoAsignado=" + idPedidoAsignado +
+                ", producto=" + producto +
+                ", pedido=" + pedido +
+                '}';
     }
 }
