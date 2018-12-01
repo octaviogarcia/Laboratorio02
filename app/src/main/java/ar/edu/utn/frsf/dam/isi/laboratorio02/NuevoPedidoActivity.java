@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -43,7 +44,6 @@ public class NuevoPedidoActivity extends AppCompatActivity {
     RadioButton rbDomicilio;
     RadioGroup rbgModoDeEntrega;
     EditText etDireccion;
-//    ProductoRepository productoRepository;
     List<Producto> listaProductos = null;
     PedidoRepository pedidoRepository;
     Pedido pedido;
@@ -132,15 +132,22 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                         }
                         Intent broadcastIntent = new Intent(NuevoPedidoActivity.this,EstadoPedidoReceiver.class);
                         broadcastIntent.setAction(EstadoPedidoReceiver.ESTADO_ACEPTADO);
-
+                        MyDatabase db = MyDatabase.getInstance(NuevoPedidoActivity.this);
                         // buscar pedidos no aceptados y aceptarlos utomáticamente
-                        List<Pedido> lista = pedidoRepository.getLista();
+                        List<Pedido> lista = null;
+                        if(MainActivity.useDB){
+                            lista = db.getPedidoDao().getAll();
+                        }
+                        else lista = pedidoRepository.getLista();
+
                         for(Pedido p: lista){
                             if(p.getEstado().equals(Pedido.Estado.REALIZADO))
                             {
                                 broadcastIntent.putExtra("idPedido",p.getId());
                                 p.setEstado(Pedido.Estado.ACEPTADO);
-                                MyDatabase.getInstance(NuevoPedidoActivity.this).getPedidoDao().update(p);
+
+                                if(MainActivity.useDB) db.getPedidoDao().update(p);
+
                                 sendBroadcast(broadcastIntent);
                             }
                         }
@@ -332,15 +339,12 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                 }
             });
 
-
             if(MainActivity.useDB){
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        MyDatabase db = MyDatabase.getInstance(NuevoPedidoActivity.this);
-                        List<PedidoConDetalles> listPedConDet = db.getPedidoDao().buscarPorIdConDetalles(id);
-                        final Pedido pedido = listPedConDet.get(0).pedido;
-                        pedido.setDetalle(listPedConDet.get(0).detalle);
+                        final Pedido pedido = MainActivity.getPedidoById(NuevoPedidoActivity.this,id);
+                        Log.d("VIENDODETALLE",pedido.toString());
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -353,8 +357,6 @@ public class NuevoPedidoActivity extends AppCompatActivity {
             else {
                 terminarOnCreate(pedidoRepository.buscarPorId(id));
             }
-
-
         }
     }
 

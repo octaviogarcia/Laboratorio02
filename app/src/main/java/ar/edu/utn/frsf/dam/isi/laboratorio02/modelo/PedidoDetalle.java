@@ -5,6 +5,9 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
+
+import ar.edu.utn.frsf.dam.isi.laboratorio02.MainActivity;
+
 import static android.arch.persistence.room.ForeignKey.CASCADE;
 
 @Entity(foreignKeys =
@@ -14,7 +17,6 @@ import static android.arch.persistence.room.ForeignKey.CASCADE;
         onDelete = CASCADE))
 public class PedidoDetalle {
 
-    private static int ID_DETALLE =1;
     @PrimaryKey(autoGenerate = true)
     private Integer id;
     private Integer cantidad;
@@ -37,7 +39,6 @@ public class PedidoDetalle {
 
     @Ignore
     public PedidoDetalle(Integer cantidad, Producto producto) {
-        id =ID_DETALLE++;
         this.cantidad = cantidad;
         this.producto = producto;
     }
@@ -80,8 +81,7 @@ public class PedidoDetalle {
 
 
 
-    @Override
-    public String toString() {
+    public String toString2() {
         return "PedidoDetalle{" +
                 "id=" + id +
                 ", cantidad=" + cantidad +
@@ -89,5 +89,10 @@ public class PedidoDetalle {
                 ", producto=" + producto +
                 ", pedido=" + pedido +
                 '}';
+    }
+
+    @Override
+    public String toString(){
+        return producto.toString() + "x" + cantidad.toString();
     }
 }

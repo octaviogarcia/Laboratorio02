@@ -8,8 +8,12 @@ import android.support.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.MyDatabase;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.PedidoDao;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.PedidoRepository;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Pedido;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoConDetalles;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoDetalle;
 
 public class PrepararPedidoService extends IntentService {
 
@@ -32,7 +36,23 @@ public class PrepararPedidoService extends IntentService {
             e.printStackTrace();
         }
         PedidoRepository pedidoRepository = new PedidoRepository();
-        List<Pedido> listaPedidos = pedidoRepository.getLista();
+
+        List<Pedido> listaPedidos = null;
+        MyDatabase db = MyDatabase.getInstance(PrepararPedidoService.this);
+        PedidoDao pdao = db.getPedidoDao();
+
+        if(MainActivity.useDB){
+            listaPedidos = pdao.getAll();
+            for(Pedido p : listaPedidos){
+                List<PedidoConDetalles> pcd = pdao.buscarPorIdConDetalles(p.getId());
+                List<PedidoDetalle> pedidoDetalles = pcd.get(0).detalle;
+                p.setDetalle(pedidoDetalles);
+                for(PedidoDetalle pd : pedidoDetalles){
+                    pd.setPedido(p);
+                }
+            }
+        }
+        else listaPedidos = pedidoRepository.getLista();
 
         Intent broadcastIntent = new Intent(PrepararPedidoService.this,EstadoPedidoReceiver.class);
         broadcastIntent.setAction(EstadoPedidoReceiver.ESTADO_EN_PREPARACION);
@@ -44,6 +64,7 @@ public class PrepararPedidoService extends IntentService {
             {
                 p.setEstado(Pedido.Estado.EN_PREPARACION);
                 pedidosRealizados.add(p.getId());
+                pdao.update(p);
             }
         }
         broadcastIntent.putIntegerArrayListExtra("pedidosRealizados",pedidosRealizados);

@@ -3,6 +3,7 @@ package ar.edu.utn.frsf.dam.isi.laboratorio02;
 import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,12 +14,18 @@ import android.widget.Button;
 
 import com.google.firebase.iid.FirebaseInstanceId;
 
+import java.util.List;
+
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.MyDatabase;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.PedidoDao;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Pedido;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoConDetalles;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoDetalle;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Producto;
 
 public class MainActivity extends AppCompatActivity {
     //Switcheo entre Retrofit/REST y ROOM
-    public static final boolean useDB = true;
+    public static final boolean useDB = false;
 
     private Button btnNuevoPedido;
     private Button btnHistorial;
@@ -139,5 +146,18 @@ public class MainActivity extends AppCompatActivity {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
+    }
+
+    public static Pedido getPedidoById(Context context, Integer id){
+        PedidoDao pedidoDao =MyDatabase.getInstance(context)
+                .getPedidoDao();
+
+        List<PedidoConDetalles> temp = pedidoDao.buscarPorIdConDetalles(id);
+        if(temp.isEmpty()) return null;
+        Pedido pedido = temp.get(0).pedido;
+        List<PedidoDetalle> pedidoDetalles = temp.get(0).detalle;
+        pedido.setDetalle(pedidoDetalles);
+        for(PedidoDetalle pd : pedidoDetalles) pd.setPedido(pedido);
+        return pedido;
     }
 }

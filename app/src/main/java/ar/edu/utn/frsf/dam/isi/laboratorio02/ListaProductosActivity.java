@@ -119,6 +119,8 @@ public class ListaProductosActivity extends AppCompatActivity{
                 @Override
                 public void callback(List<Producto> productos) {
                     listaProd = productos;
+                    if(listaCat.size() == 0 || spinnerCatProd.getSelectedItemPosition() == -1)
+                        return;
                     listarProductos(listaCat.get(spinnerCatProd.getSelectedItemPosition()));
                 }
             });
@@ -129,6 +131,8 @@ public class ListaProductosActivity extends AppCompatActivity{
                 @Override
                 public void callback(List<Producto> productos) {
                     listaProd = productos;
+                    if(listaCat.size() == 0 || spinnerCatProd.getSelectedItemPosition() == -1)
+                        return;
                     listarProductos(listaCat.get(spinnerCatProd.getSelectedItemPosition()));
                 }
             });
@@ -139,6 +143,7 @@ public class ListaProductosActivity extends AppCompatActivity{
     private void listarProductos(final Categoria c)
     {//Reutiliza la variable listaProd
         if(listaProd == null) return;
+        if(listaProd.size() == 0) return;
         //List<Producto> listaProd = productoRepository.buscarPorCategoria(c);
         List<Producto> listaMostrar = new ArrayList<>();
 
