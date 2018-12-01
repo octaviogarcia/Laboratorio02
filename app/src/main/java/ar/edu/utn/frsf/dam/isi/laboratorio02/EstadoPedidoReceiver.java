@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -29,25 +30,15 @@ public class EstadoPedidoReceiver extends BroadcastReceiver {
 
     PedidoRepository pedidoRepository = new PedidoRepository();
 
-    @SuppressLint("StaticFieldLeak")
     @Override
     public void onReceive(final Context context, final Intent intent) {
         if(intent.getAction().equals(ESTADO_ACEPTADO)) {
             final Integer pedidoid = intent.getIntExtra(id_pedido_extra,-1);
             if(MainActivity.useDB){
-                new AsyncTask<Void, Void, Pedido>() {
-                    @Override
-                    protected Pedido doInBackground(Void... voids) {
-                        return MainActivity.getPedidoById(context,pedidoid);
-                    }
-
-                    @Override
-                    protected void onPostExecute(Pedido pedido) {
-                        handle_ESTADO_ACEPTADO(context,intent,pedido);
-                    }
-                }.execute();
+                ESTADO_ACEPTADO_DB temp = new ESTADO_ACEPTADO_DB(context,intent,pedidoid);
+                temp.execute();
             }
-            else {
+            else{
                 handle_ESTADO_ACEPTADO(context,intent,pedidoRepository.buscarPorId(pedidoid));
             }
         }
@@ -68,24 +59,14 @@ public class EstadoPedidoReceiver extends BroadcastReceiver {
                         .build();
 
                 NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-                notificationManager.notify(99,notification);
+                notificationManager.notify(33,notification);
             }
         }
         else if(intent.getAction().equals(ESTADO_LISTO)) {
             final Integer pedidoListo = intent.getIntExtra(id_pedido_extra,-1);
             if(pedidoListo == -1) return;
             if(MainActivity.useDB){
-                new AsyncTask<Void, Void, Pedido>() {
-                    @Override
-                    protected Pedido doInBackground(Void... voids) {
-                        return MainActivity.getPedidoById(context,pedidoListo);
-                    }
-
-                    @Override
-                    protected void onPostExecute(Pedido pedido) {
-                        handle_ESTADO_LISTO(context,intent,pedido);
-                    }
-                }.execute();
+                new ESTADO_LISTO_DB(context,intent,pedidoListo).execute();
             }
             else{
                 handle_ESTADO_LISTO(context,intent,pedidoRepository.buscarPorId(pedidoListo));
@@ -97,6 +78,7 @@ public class EstadoPedidoReceiver extends BroadcastReceiver {
     void handle_ESTADO_ACEPTADO(Context context,Intent intent,Pedido p){
         if(p != null)
         {
+            Log.d("BROADCASTRECEIVER",p.toString());
             String contenido = String.format("El costo sera de $%f\n Previsto el envio para %s",p.total(),p.getFecha().toString());
 
             Intent destino = new Intent(context,NuevoPedidoActivity.class);
@@ -112,8 +94,10 @@ public class EstadoPedidoReceiver extends BroadcastReceiver {
                     .setContentIntent(pendingDestino)
                     .build();
 
+            Log.d("BROADCASTRECEIVER",String.valueOf(destino.getIntExtra(NuevoPedidoActivity.extraIdPedido,-1)));
+
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-            notificationManager.notify(99,notification);
+            notificationManager.notify(14,notification);
         }
     }
     void handle_ESTADO_LISTO(Context context,Intent intent,Pedido p){
@@ -131,7 +115,51 @@ public class EstadoPedidoReceiver extends BroadcastReceiver {
                 .build();
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        notificationManager.notify(99,notification);
+        notificationManager.notify(17,notification);
+    }
+
+    private class ESTADO_LISTO_DB extends AsyncTask<Void, Void, Pedido> {
+        Integer id = null;
+        Context context = null;
+        Intent intent = null;
+
+        public ESTADO_LISTO_DB(Context _context,Intent _intent,Integer _id){
+            context = _context;
+            intent = _intent;
+            id = _id;
+        }
+
+        @Override
+        protected Pedido doInBackground(Void... voids) {
+            return MainActivity.getPedidoById(context,id);
+        }
+
+        @Override
+        protected void onPostExecute(Pedido pedido) {
+            handle_ESTADO_LISTO(context,intent,pedido);
+        }
+    };
+
+    private class ESTADO_ACEPTADO_DB extends AsyncTask<Void, Void, Pedido> {
+        Integer id = null;
+        Context context = null;
+        Intent intent = null;
+
+        public ESTADO_ACEPTADO_DB(Context _context,Intent _intent,Integer _id){
+            context = _context;
+            intent = _intent;
+            id = _id;
+        }
+
+        @Override
+        protected Pedido doInBackground(Void... voids) {
+            return MainActivity.getPedidoById(context,id);
+        }
+
+        @Override
+        protected void onPostExecute(Pedido pedido) {
+            handle_ESTADO_ACEPTADO(context,intent,pedido);
+        }
     }
 
 }

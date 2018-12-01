@@ -25,7 +25,7 @@ import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Producto;
 
 public class MainActivity extends AppCompatActivity {
     //Switcheo entre Retrofit/REST y ROOM
-    public static final boolean useDB = false;
+    public static final boolean useDB = true;
 
     private Button btnNuevoPedido;
     private Button btnHistorial;
