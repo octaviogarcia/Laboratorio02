@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Laboratorio02</string>
     <string name="main_titulo">Menu de opciones</string>
+    <string name="canal_estado_nombre">Estados</string>
+    <string name="canal_estado_descr">Se utiliza para avisar cambio de estado de los pedidos</string>
+    <string name="default_notification_channel_id">Canal Push</string>
 </resources>

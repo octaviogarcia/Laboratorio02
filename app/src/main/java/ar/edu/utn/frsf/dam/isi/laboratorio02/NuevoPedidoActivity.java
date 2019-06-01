@@ -2,12 +2,13 @@ package ar.edu.utn.frsf.dam.isi.laboratorio02;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
-import android.support.v7.app.AppCompatActivity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.View;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -19,15 +20,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncProductoGET;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.AsyncProductoSelect;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.MyDatabase;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.PedidoRepository;
-import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.ProductoRepository;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Pedido;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoConDetalles;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.PedidoDetalle;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.modelo.Producto;
 
 public class NuevoPedidoActivity extends AppCompatActivity {
+    public static final String extraIdPedido  = "Id_pedido";
     EditText etCorreoElectronico;
     Button btAgregarProducto;
     Button btQuitarProducto;
@@ -38,7 +44,7 @@ public class NuevoPedidoActivity extends AppCompatActivity {
     RadioButton rbDomicilio;
     RadioGroup rbgModoDeEntrega;
     EditText etDireccion;
-    ProductoRepository productoRepository;
+    List<Producto> listaProductos = null;
     PedidoRepository pedidoRepository;
     Pedido pedido;
     TextView tvTotalPedido;
@@ -46,20 +52,26 @@ public class NuevoPedidoActivity extends AppCompatActivity {
     EditText etHoraSeleccionada;
     Double costoActual = 0.0;
 
-    Integer selectedIndex = -1;
-    View selectedView = null;
-
-    int defaultBackColor = -1;
-
+    static final int segundos = 10;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.nuevo_pedido);
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
         etCorreoElectronico = findViewById(R.id.etCorreoElectronico);
+        String defaultCorreo = sharedPreferences.getString("etCorreoElectronico","");
+        etCorreoElectronico.setText(defaultCorreo);
+
         btAgregarProducto = findViewById(R.id.btAgregarProducto);
+        //lo desahibilito y lo habilito cuando reciba los productos
+        btAgregarProducto.setEnabled(false);
         btQuitarProducto = findViewById(R.id.btQuitarProducto);
         lvPedido = findViewById(R.id.lvPedido);
+
         rbLocal = findViewById(R.id.rbLocal);
         rbDomicilio = findViewById(R.id.rbDomicilio);
         etDireccion = findViewById(R.id.etDireccion);
@@ -71,9 +83,7 @@ public class NuevoPedidoActivity extends AppCompatActivity {
 
         final Intent intentHistorial = new Intent(this, HistorialPedidoActivity.class);
         final Intent intentMain = new Intent(this,MainActivity.class);
-        Intent intent = getIntent();
 
-        productoRepository = new ProductoRepository();
         pedidoRepository = new PedidoRepository();
         pedido = new Pedido();
 
@@ -98,16 +108,55 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                 startActivity(intentMain);
             }
         });
-        rbLocal.performClick();
 
-        adapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,android.R.id.text1,pedido.getDetalle());
+        if(sharedPreferences.getBoolean("cbRetirar",true))
+        {
+            rbLocal.performClick();
+        }
+        else rbDomicilio.performClick();
+
+        adapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_multiple_choice,android.R.id.text1,pedido.getDetalle());
         lvPedido.setAdapter(adapter);
-        lvPedido.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
-
+        lvPedido.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 
         btHacerPedido.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.currentThread().sleep(segundos*1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        Intent broadcastIntent = new Intent(NuevoPedidoActivity.this,EstadoPedidoReceiver.class);
+                        broadcastIntent.setAction(EstadoPedidoReceiver.ESTADO_ACEPTADO);
+                        MyDatabase db = MyDatabase.getInstance(NuevoPedidoActivity.this);
+                        // buscar pedidos no aceptados y aceptarlos utomáticamente
+                        List<Pedido> lista = null;
+                        if(MainActivity.useDB){
+                            lista = db.getPedidoDao().getAll();
+                        }
+                        else lista = pedidoRepository.getLista();
+
+                        for(Pedido p: lista){
+                            if(p.getEstado().equals(Pedido.Estado.REALIZADO))
+                            {
+                                broadcastIntent.putExtra("idPedido",p.getId());
+                                p.setEstado(Pedido.Estado.ACEPTADO);
+
+                                if(MainActivity.useDB) db.getPedidoDao().update(p);
+
+                                sendBroadcast(broadcastIntent);
+                            }
+                        }
+                    }
+
+                };
+                Thread unHilo = new Thread(r);
+                unHilo.start();
+
                 ArrayList<String> errores = new ArrayList<>();
                 String correo = etCorreoElectronico.getText().toString();
                 if(correo.isEmpty())
@@ -184,70 +233,91 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                     throw new RuntimeException("UNREACHABLE");
                 }
 
+
                 pedido.setEstado(Pedido.Estado.REALIZADO);
-                pedidoRepository.guardarPedido(pedido);
 
-                pedido = new Pedido();//Reinicio.
-                adapter = new ArrayAdapter<>(NuevoPedidoActivity.this,android.R.layout.simple_list_item_1,android.R.id.text1,pedido.getDetalle());
-                lvPedido.setAdapter(adapter);
-
-                startActivity(intentHistorial);
-            }
-        });
-
-        lvPedido.setOnItemLongClickListener(new ListView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if(selectedIndex == i)
-                {//Si estaba seleccionado, lo deselecciono
-                    view.setBackgroundColor(defaultBackColor);
-
-                    selectedIndex = -1;
-                    selectedView = null;
+                if(MainActivity.useDB){
+                    final MyDatabase db = MyDatabase.getInstance(NuevoPedidoActivity.this);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            final long id = db.getPedidoDao().insert(pedido);
+                            for(PedidoDetalle pd : pedido.getDetalle()){
+                                pd.setIdPedidoAsignado(id);
+                                db.getPedidoDetalleDao().insert(pd);
+                            }
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    pedido = new Pedido();//Reinicio.
+                                    adapter = new ArrayAdapter<>(NuevoPedidoActivity.this,android.R.layout.simple_list_item_1,android.R.id.text1,pedido.getDetalle());
+                                    lvPedido.setAdapter(adapter);
+                                    startActivity(intentHistorial);
+                                }
+                            });
+                        }
+                    }).start();
                 }
-                else if(selectedIndex == -1)
-                {//Si no habia nada seleccionado, lo selecciono
-                    selectedIndex = i;
-                    selectedView = view;
-
-                    defaultBackColor = view.getSolidColor();
-
-                    view.setBackgroundColor(Color.YELLOW);
+                else{
+                    pedidoRepository.guardarPedido(pedido);
+                    pedido = new Pedido();//Reinicio.
+                    adapter = new ArrayAdapter<>(NuevoPedidoActivity.this,android.R.layout.simple_list_item_1,android.R.id.text1,pedido.getDetalle());
+                    lvPedido.setAdapter(adapter);
+                    startActivity(intentHistorial);
                 }
-                else
-                {//Ya habia algo seleccionado, cambio la seleccion
-                    selectedView.setBackgroundColor(defaultBackColor);
-
-                    selectedIndex = i;
-                    selectedView = view;
-                    defaultBackColor = view.getSolidColor();
-
-                    view.setBackgroundColor(Color.YELLOW);
-                }
-                return false;
             }
         });
 
         btQuitarProducto.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(selectedIndex != -1)
+                SparseBooleanArray checked = lvPedido.getCheckedItemPositions();
+                List<PedidoDetalle> toRemove= new ArrayList<>();
+                for(int i = 0;i < adapter.getCount();i++)
                 {
-                    //restauro el color al item por que se va a reusar para el que "viene" despues
-                    selectedView.setBackgroundColor(defaultBackColor);
-
-                    PedidoDetalle p = adapter.getItem(selectedIndex);
-                    adapter.remove(p);
-                    selectedIndex = -1;
-                    selectedView = null;
-                    adapter.notifyDataSetChanged();
+                    if(checked.get(i))
+                    {
+                        PedidoDetalle pd =  adapter.getItem(i);
+                        toRemove.add(pd);
+                        //Le saco el check al view
+                        lvPedido.setItemChecked(i,false);
+                    }
                 }
+                for(PedidoDetalle pd : toRemove) adapter.remove(pd);
+
+                adapter.notifyDataSetChanged();
             }
         });
 
 
+        Intent intent = getIntent();
+        final Integer id = intent.getIntExtra(extraIdPedido,-1);
 
-        Integer id = intent.getIntExtra("Id pedido",-1);
+        if(MainActivity.useDB){
+            AsyncProductoSelect asyncProductoSelect = new AsyncProductoSelect(this, new AsyncProductoSelect.IProductoSelectCallback() {
+                @Override
+                public void callback(List<Producto> productos) {
+                    if(productos!=null){
+                        listaProductos = productos;
+                        if(id == -1) btAgregarProducto.setEnabled(true);
+                    }
+                }
+            });
+            asyncProductoSelect.execute();
+        }
+        else {
+            AsyncProductoGET asyncProductoGET = new AsyncProductoGET(this, new AsyncProductoGET.IProductoGETCallback() {
+                @Override
+                public void callback(List<Producto> productos) {
+                    if (productos != null) {
+                        listaProductos = productos;
+                        if (id == -1) btAgregarProducto.setEnabled(true);
+                    }
+                }
+            });
+            asyncProductoGET.start();
+        }
+
         if(id != -1){
             etCorreoElectronico.setEnabled(false);
             btAgregarProducto.setEnabled(false);
@@ -259,7 +329,8 @@ public class NuevoPedidoActivity extends AppCompatActivity {
 
             btHacerPedido.setEnabled(false);
             btQuitarProducto.setEnabled(false);
-            lvPedido.setLongClickable(false);
+
+            lvPedido.setEnabled(false);
 
             btVolver.setOnClickListener(new Button.OnClickListener() {
                 @Override
@@ -268,23 +339,53 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                 }
             });
 
-            Pedido pedido = pedidoRepository.buscarPorId(id);
-
-            etCorreoElectronico.setText(pedido.getMailContacto());
-            etHoraSeleccionada.setText(pedido.getFecha().toString());
-            if(pedido.getRetirar()){
-                rbLocal.setChecked(true);
+            if(MainActivity.useDB){
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final Pedido pedido = MainActivity.getPedidoById(NuevoPedidoActivity.this,id);
+                        Log.d("VIENDODETALLE",pedido.toString());
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                terminarOnCreate(pedido);
+                            }
+                        });
+                    }
+                }).start();
             }
-            else{
-                rbDomicilio.setChecked(true);
-                etDireccion.setText(pedido.getDireccionEnvio());
-                etDireccion.setEnabled(false);
+            else {
+                terminarOnCreate(pedidoRepository.buscarPorId(id));
             }
-
-            adapter.addAll(pedido.getDetalle());
-            adapter.notifyDataSetChanged();
         }
     }
+
+    void terminarOnCreate(Pedido pedido){
+        etCorreoElectronico.setText(pedido.getMailContacto());
+        etHoraSeleccionada.setText(pedido.getFecha().toString());
+        if(pedido.getRetirar()){
+            rbLocal.setChecked(true);
+        }
+        else{
+            rbDomicilio.setChecked(true);
+            etDireccion.setText(pedido.getDireccionEnvio());
+            etDireccion.setEnabled(false);
+        }
+
+        adapter.addAll(pedido.getDetalle());
+        adapter.notifyDataSetChanged();
+    }
+
+    private Producto buscarProductoPorId(Integer id){
+        if(listaProductos == null) return null;
+
+        for(Producto p : listaProductos){
+            if(p.getId().equals(id)) return p;
+        }
+
+        return null;
+    }
+
     @Override
     protected void onActivityResult(int request,int result, Intent data)
     {//Manejo el retorno de listar pedidos
@@ -305,7 +406,8 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                         return;
                     }
                 }
-                PedidoDetalle pd = new PedidoDetalle(cantidad,productoRepository.buscarPorId(id));
+                //PedidoDetalle pd = new PedidoDetalle(cantidad,productoRepository.buscarPorId(id));
+                PedidoDetalle pd = new PedidoDetalle(cantidad,buscarProductoPorId(id));
                 pedido.agregarDetalle(pd);
                 costoActual+= pd.getProducto().getPrecio()*cantidad;
                 tvTotalPedido.setText(String.format("Total del pedido: $%f",costoActual));

@@ -2,22 +2,22 @@ package ar.edu.utn.frsf.dam.isi.laboratorio02.modelo;
 
 import android.content.Context;
 import android.content.Intent;
-import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import java.util.List;
 
+import ar.edu.utn.frsf.dam.isi.laboratorio02.MainActivity;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.NuevoPedidoActivity;
 import ar.edu.utn.frsf.dam.isi.laboratorio02.R;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.MyDatabase;
+import ar.edu.utn.frsf.dam.isi.laboratorio02.dao.PedidoDao;
 
 public class PedidoAdapter extends ArrayAdapter<Pedido> {
     private Context ctx;
@@ -44,14 +44,14 @@ public class PedidoAdapter extends ArrayAdapter<Pedido> {
         }
 
 
-        Pedido pedido = (Pedido) super.getItem(position);
+        final Pedido pedido = (Pedido) super.getItem(position);
         pediHolder.tvMailPedido.setText("Contacto: "+pedido.getMailContacto());
         pediHolder.tvHoraEntrega.setText("Fecha de Entrega: "+pedido.getFecha().toString());
         pediHolder.tvCantidadItems.setText("Items: "+new Integer(pedido.getDetalle().size()).toString());
         pediHolder.tvPrecio.setText("A pagar $: "+pedido.total().toString());
 
         //Ponemos esta imagen por que no encontramos la pedida
-        pediHolder.tipoEntrega.setImageResource(R.drawable.utencillos);
+        pediHolder.tipoEntrega.setImageResource(R.drawable.retira);
 
         switch(pedido.getEstado())
         {
@@ -85,12 +85,21 @@ public class PedidoAdapter extends ArrayAdapter<Pedido> {
             new Button.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Pedido p = (Pedido) view.getTag();
+                    final Pedido p = (Pedido) view.getTag();
                     if(     p.getEstado().equals(Pedido.Estado.REALIZADO)||
                             p.getEstado().equals(Pedido.Estado.ACEPTADO) ||
                             p.getEstado().equals(Pedido.Estado.EN_PREPARACION))
                     {
                         p.setEstado(Pedido.Estado.CANCELADO);
+                        if(MainActivity.useDB){
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    PedidoDao pedidoDao = MyDatabase.getInstance(PedidoAdapter.this.ctx).getPedidoDao();
+                                    pedidoDao.update(p);
+                                }
+                            }).start();
+                        }
                         PedidoAdapter.this.notifyDataSetChanged();
                         return;
                     }
@@ -102,7 +111,8 @@ public class PedidoAdapter extends ArrayAdapter<Pedido> {
         new Button.OnClickListener() {
               @Override
               public void onClick(View view) {
-                  intentNuevoPedido.putExtra("Id pedido", ((Pedido)view.getTag()).getId());
+                  intentNuevoPedido.putExtra(NuevoPedidoActivity.extraIdPedido, ((Pedido)view.getTag()).getId());
+                  Log.d("HistorialPedidoActivity",((Pedido)view.getTag()).toString());
                   ctx.startActivity(intentNuevoPedido);
               }
           }
